@@ -33,6 +33,15 @@ function fluidampr_asset_version( $relative ) {
 function fluidampr_enqueue_assets() {
 	$css_rel = 'assets/css/site.css';
 	$js_rel  = 'assets/js/site.js';
+	$deps    = array( 'fluidampr-style' );
+
+	if ( is_singular() ) {
+		$post_css = 'avia-single-post-' . get_queried_object_id();
+
+		if ( wp_style_is( $post_css, 'registered' ) || wp_style_is( $post_css, 'enqueued' ) ) {
+			$deps[] = $post_css;
+		}
+	}
 
 	wp_enqueue_style(
 		'fluidampr-style',
@@ -44,7 +53,7 @@ function fluidampr_enqueue_assets() {
 	wp_enqueue_style(
 		'fluidampr-site',
 		FLUIDAMPR_THEME_URI . '/' . $css_rel,
-		array( 'fluidampr-style' ),
+		$deps,
 		fluidampr_asset_version( $css_rel )
 	);
 
@@ -85,7 +94,7 @@ function fluidampr_enqueue_assets() {
 		)
 	);
 }
-add_action( 'wp_enqueue_scripts', 'fluidampr_enqueue_assets', 30 );
+add_action( 'wp_enqueue_scripts', 'fluidampr_enqueue_assets', 1000002 );
 
 /**
  * Preload the latin heading/body font and logo for a faster first paint.

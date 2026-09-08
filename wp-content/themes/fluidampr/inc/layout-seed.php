@@ -129,7 +129,7 @@ function fluidampr_upsert_page( $slug, $page ) {
 	update_post_meta( $post_id, '_aviaLayoutBuilderCleanData', $page['content'] );
 	update_post_meta( $post_id, 'layout', 'fullsize' );
 	update_post_meta( $post_id, 'header_title_bar', 'hidden_title_bar' );
-	update_post_meta( $post_id, 'sidebar', 'hidden' );
+	update_post_meta( $post_id, 'footer', 'nofooterarea' );
 
 	return (int) $post_id;
 }

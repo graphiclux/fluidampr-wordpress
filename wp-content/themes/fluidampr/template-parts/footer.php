@@ -14,7 +14,7 @@ $email   = fluidampr_get_option( 'email' );
 $address = fluidampr_get_option( 'address' );
 $year    = gmdate( 'Y' );
 ?>
-<footer class="fluid-footer" id="footer">
+<footer class="fluid-footer" id="fluid-site-footer">
 	<div class="fluid-footer__grid">
 		<div class="fluid-footer__brand">
 			<a class="fluid-header__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">

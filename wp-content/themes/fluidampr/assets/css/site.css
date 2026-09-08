@@ -332,7 +332,7 @@ body.fluid-overlay-open {
 
 .fluid-hero__heading {
 	font-size: var(--fluid-fs-h1);
-	max-width: 16ch;
+	max-width: none;
 	margin: 0 0 2.5rem;
 }
 
@@ -892,7 +892,7 @@ body.fluid-overlay-open {
 .fluidampr-theme .main_menu,
 .fluidampr-theme #header_meta,
 .fluidampr-theme #socket,
-.fluidampr-theme #footer.container_wrap.footer_color {
+.fluidampr-theme div#footer.container_wrap {
 	display: none;
 }
 
@@ -926,13 +926,58 @@ body.fluid-overlay-open {
 	padding: 0;
 }
 
-.fluidampr-theme #socket,
-.fluidampr-theme #footer.container_wrap.footer_color {
+.fluidampr-theme .avia_textblock p:empty {
 	display: none;
 }
 
-.fluidampr-theme .avia_textblock p:empty {
-	display: none;
+.fluidampr-theme #top,
+.fluidampr-theme #top h1,
+.fluidampr-theme #top h2,
+.fluidampr-theme #top h3,
+.fluidampr-theme #top p,
+.fluidampr-theme #top .avia_textblock {
+	font-family: var(--fluid-font);
+}
+
+body.fluidampr-theme .fluid-button,
+body.fluidampr-theme a.fluid-button,
+body.fluidampr-theme button.fluid-button {
+	background: var(--fluid-color-primary) !important;
+	color: #fff !important;
+	border: 0 !important;
+	box-shadow: none !important;
+}
+
+body.fluidampr-theme .fluid-button--outline,
+body.fluidampr-theme a.fluid-button--outline {
+	background: transparent !important;
+	color: var(--fluid-color-primary) !important;
+	border: 1.5px solid var(--fluid-color-primary) !important;
+}
+
+body.fluidampr-theme a.fluid-finder__browse,
+body.fluidampr-theme a.fluid-card__link,
+body.fluidampr-theme .fluid-explore a {
+	color: var(--fluid-color-primary) !important;
+}
+
+body.fluidampr-theme .fluid-finder__bar,
+body.fluidampr-theme .fluid-finder__bar h2,
+body.fluidampr-theme .fluid-finder__title {
+	color: #fff !important;
+}
+
+body.fluidampr-theme .fluid-finder__subtitle {
+	color: rgba(255, 255, 255, 0.72) !important;
+}
+
+body.fluidampr-theme .fluid-cta__title {
+	color: #fff !important;
+}
+
+body.fluidampr-theme .fluid-cta__text,
+body.fluidampr-theme .fluid-cta__text p {
+	color: rgba(255, 255, 255, 0.78) !important;
 }
 
 /* -------------------------------------------------------------------------- */

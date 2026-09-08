@@ -100,6 +100,7 @@ function fluidampr_use_custom_footer() {
 	}
 }
 add_action( 'wp', 'fluidampr_use_custom_footer', 20 );
+add_action( 'ava_after_body_opening_tag', 'fluidampr_use_custom_footer', 5 );
 
 /**
  * Print the Fluidampr footer before Enfold closes the document.
