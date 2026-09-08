@@ -269,9 +269,8 @@ function fluidampr_shortcode_hero_heading( $atts ) {
 	ob_start();
 	?>
 	<h1 class="fluid-hero__heading">
-		<span><?php echo esc_html( $atts['line_1'] ); ?></span>
-		<span><?php echo esc_html( $atts['line_2'] ); ?></span>
-		<span class="fluid-hero__accent"><?php echo esc_html( $atts['accent'] ); ?></span>
+		<span class="fluid-hero__heading-lead"><?php echo esc_html( $atts['line_1'] ); ?></span>
+		<span class="fluid-hero__heading-sub"><?php echo esc_html( $atts['line_2'] ); ?> <span class="fluid-hero__accent"><?php echo esc_html( $atts['accent'] ); ?></span></span>
 	</h1>
 	<?php
 	return (string) ob_get_clean();

@@ -248,7 +248,7 @@ function fluidampr_seed_page_definitions() {
 			'one_half',
 			true,
 			fluidampr_alb_text(
-				'<h1 class="fluid-hero__heading"><span>Find the right damper.</span><span>Build it right.</span><span class="fluid-hero__accent">With confidence.</span></h1>',
+				'<h1 class="fluid-hero__heading"><span class="fluid-hero__heading-lead">Find the right damper.</span><span class="fluid-hero__heading-sub">Build it right. <span class="fluid-hero__accent">With confidence.</span></span></h1>',
 				'fluid-hero-heading-block'
 			)
 			. fluidampr_alb_text( '[fluid_finder_panel mode="compact"]', 'fluid-finder-embed' )

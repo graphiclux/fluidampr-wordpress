@@ -84,7 +84,7 @@ $year    = gmdate( 'Y' );
 		</div>
 
 		<div class="fluid-footer__newsletter">
-			<p class="fluid-footer__heading"><?php esc_html_e( 'Newsletter', 'fluidampr' ); ?></p>
+			<p class="fluid-footer__heading fluid-footer__heading--accent"><?php esc_html_e( 'Newsletter', 'fluidampr' ); ?></p>
 			<p class="fluid-footer__note"><?php echo esc_html( fluidampr_get_option( 'newsletter_note' ) ); ?></p>
 			<form class="fluid-footer__form" data-fluid-newsletter method="post" action="<?php echo esc_url( rest_url( 'fluidampr/v1/newsletter' ) ); ?>" novalidate>
 				<label class="screen-reader-text" for="fluid-newsletter-email"><?php esc_html_e( 'Email address', 'fluidampr' ); ?></label>
