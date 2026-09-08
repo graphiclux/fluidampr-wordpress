@@ -1,0 +1,17 @@
+/*
+Theme Name: Fluidampr
+Theme URI: https://graphiclux.com/
+Description: Custom Enfold child theme for Fluidampr. All project CSS, JavaScript, and functionality live here so Enfold can be updated safely.
+Author: Graphic Lux
+Author URI: https://graphiclux.com/
+Template: enfold
+Version: 1.0.0
+Requires at least: 6.4
+Requires PHP: 8.0
+Text Domain: fluidampr
+*/
+
+/*
+ * Project styles are loaded from assets/css/site.css.
+ * Keep this file for WordPress child-theme metadata only.
+ */
