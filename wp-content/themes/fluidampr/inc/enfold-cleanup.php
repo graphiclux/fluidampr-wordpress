@@ -40,7 +40,10 @@ function fluidampr_hide_portfolio_cpt( $args ) {
 add_filter( 'avf_portfolio_cpt_args', 'fluidampr_hide_portfolio_cpt' );
 
 /**
- * Align Enfold header settings with the Figma header.
+ * Align Enfold header layout with the Figma header.
+ *
+ * Header Behavior (sticky, shrinking, stretch, unstick topbar) is left to
+ * Theme Options → Header → Header Behavior.
  *
  * @param array<string, mixed> $header Header settings.
  * @param string               $context Filter context.
@@ -52,14 +55,11 @@ function fluidampr_header_settings( $header, $context = '' ) {
 	$header['header_layout']           = 'logo_left menu_right';
 	$header['header_size']             = 'custom';
 	$header['header_custom_size']      = '88';
-	$header['header_sticky']           = 'disabled';
-	$header['header_shrinking']        = 'disabled';
 	$header['header_social']           = '';
 	$header['header_secondary_menu']   = '';
 	$header['header_phone_active']     = '';
 	$header['header_searchicon']       = false;
 	$header['header_title_bar']        = 'hidden_title_bar';
-	$header['header_stretch']          = 'header_stretch';
 	$header['header_menu_border']      = '';
 	$header['menu_display']            = '';
 

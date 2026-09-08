@@ -20,17 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function fluidampr_register_shortcodes() {
 	add_shortcode( 'fluid_finder_panel', 'fluidampr_shortcode_finder_panel' );
-	add_shortcode( 'fluid_feature_card', 'fluidampr_shortcode_feature_card' );
-	add_shortcode( 'fluid_community_card', 'fluidampr_shortcode_community_card' );
-	add_shortcode( 'fluid_cta_banner', 'fluidampr_shortcode_cta_banner' );
-	add_shortcode( 'fluid_hero_heading', 'fluidampr_shortcode_hero_heading' );
-	add_shortcode( 'fluid_home_hero', 'fluidampr_shortcode_home_hero' );
-	add_shortcode( 'fluid_card_grid', 'fluidampr_shortcode_card_grid' );
-	add_shortcode( 'fluid_community_grid', 'fluidampr_shortcode_community_grid' );
 	add_shortcode( 'fluid_instagram_feed', 'fluidampr_shortcode_instagram_feed' );
-	add_shortcode( 'fluid_site_footer', 'fluidampr_shortcode_site_footer' );
 	add_shortcode( 'fluid_newsletter_form', 'fluidampr_shortcode_newsletter_form' );
-	add_shortcode( 'fluid_heading_group', 'fluidampr_shortcode_heading_group' );
 }
 add_action( 'init', 'fluidampr_register_shortcodes' );
 
@@ -141,198 +132,6 @@ function fluidampr_shortcode_finder_panel( $atts ) {
 }
 
 /**
- * Feature card used in the homepage grid.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @param string|null           $content Inner content.
- * @return string
- */
-function fluidampr_shortcode_feature_card( $atts, $content = null ) {
-	$atts = shortcode_atts(
-		array(
-			'icon'  => 'pin',
-			'title' => '',
-			'link'  => '',
-			'label' => '',
-		),
-		$atts,
-		'fluid_feature_card'
-	);
-
-	ob_start();
-	?>
-	<article class="fluid-card">
-		<?php echo fluidampr_icon( $atts['icon'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<h3 class="fluid-card__title"><?php echo esc_html( $atts['title'] ); ?></h3>
-		<div class="fluid-card__text"><?php echo wp_kses_post( wpautop( $content ) ); ?></div>
-		<?php if ( $atts['link'] && $atts['label'] ) : ?>
-			<a class="fluid-card__link" href="<?php echo esc_url( $atts['link'] ); ?>"><?php echo esc_html( $atts['label'] ); ?> <span aria-hidden="true">›</span></a>
-		<?php endif; ?>
-	</article>
-	<?php
-	return (string) ob_get_clean();
-}
-
-/**
- * Community / builder photo card.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @return string
- */
-function fluidampr_shortcode_community_card( $atts ) {
-	$atts = shortcode_atts(
-		array(
-			'image'    => '',
-			'title'    => '',
-			'handle'   => '',
-			'alt'      => '',
-		),
-		$atts,
-		'fluid_community_card'
-	);
-
-	ob_start();
-	?>
-	<article class="fluid-community-card">
-		<?php if ( $atts['image'] ) : ?>
-			<img src="<?php echo esc_url( $atts['image'] ); ?>" alt="<?php echo esc_attr( $atts['alt'] ? $atts['alt'] : $atts['title'] ); ?>" loading="lazy" decoding="async" width="640" height="800">
-		<?php else : ?>
-			<div class="fluid-community-card__fallback" aria-hidden="true"></div>
-		<?php endif; ?>
-		<div class="fluid-community-card__overlay">
-			<p class="fluid-community-card__title"><?php echo esc_html( $atts['title'] ); ?></p>
-			<?php if ( $atts['handle'] ) : ?>
-				<p class="fluid-community-card__handle"><?php echo esc_html( $atts['handle'] ); ?></p>
-			<?php endif; ?>
-		</div>
-	</article>
-	<?php
-	return (string) ob_get_clean();
-}
-
-/**
- * Dark CTA banner.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @param string|null           $content Inner content.
- * @return string
- */
-function fluidampr_shortcode_cta_banner( $atts, $content = null ) {
-	$atts = shortcode_atts(
-		array(
-			'title'      => '',
-			'button'     => '',
-			'url'        => '',
-			'image'      => '',
-			'image_alt'  => '',
-		),
-		$atts,
-		'fluid_cta_banner'
-	);
-
-	ob_start();
-	?>
-	<section class="fluid-cta">
-		<div class="fluid-cta__copy">
-			<h2 class="fluid-cta__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-			<div class="fluid-cta__text"><?php echo wp_kses_post( wpautop( $content ) ); ?></div>
-			<?php if ( $atts['url'] && $atts['button'] ) : ?>
-				<a class="fluid-button" href="<?php echo esc_url( $atts['url'] ); ?>"><?php echo esc_html( $atts['button'] ); ?></a>
-			<?php endif; ?>
-		</div>
-		<?php if ( $atts['image'] ) : ?>
-			<div class="fluid-cta__media">
-				<img src="<?php echo esc_url( $atts['image'] ); ?>" alt="<?php echo esc_attr( $atts['image_alt'] ); ?>" loading="lazy" decoding="async" width="720" height="480">
-			</div>
-		<?php endif; ?>
-	</section>
-	<?php
-	return (string) ob_get_clean();
-}
-
-/**
- * Hero headline with accented last line.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @return string
- */
-function fluidampr_shortcode_hero_heading( $atts ) {
-	$atts = shortcode_atts(
-		array(
-			'line_1' => __( 'Find the right damper.', 'fluidampr' ),
-			'line_2' => __( 'Build it right.', 'fluidampr' ),
-			'accent' => __( 'With confidence.', 'fluidampr' ),
-		),
-		$atts,
-		'fluid_hero_heading'
-	);
-
-	ob_start();
-	?>
-	<h1 class="fluid-hero__heading">
-		<span class="fluid-hero__heading-lead"><?php echo esc_html( $atts['line_1'] ); ?></span>
-		<span class="fluid-hero__heading-sub"><?php echo esc_html( $atts['line_2'] ); ?> <span class="fluid-hero__accent"><?php echo esc_html( $atts['accent'] ); ?></span></span>
-	</h1>
-	<?php
-	return (string) ob_get_clean();
-}
-
-/**
- * Homepage hero: heading, finder, and product visual.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @return string
- */
-function fluidampr_shortcode_home_hero( $atts ) {
-	$atts = shortcode_atts(
-		array(
-			'image' => FLUIDAMPR_THEME_URI . '/assets/images/hero-damper.svg',
-			'alt'   => __( 'Fluidampr performance damper', 'fluidampr' ),
-		),
-		$atts,
-		'fluid_home_hero'
-	);
-
-	ob_start();
-	?>
-	<section class="fluid-hero">
-		<?php echo fluidampr_shortcode_hero_heading( array() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-		<div class="fluid-hero__stage">
-			<?php echo fluidampr_shortcode_finder_panel( array( 'mode' => 'compact' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			<div class="fluid-hero__media">
-				<img src="<?php echo esc_url( $atts['image'] ); ?>" alt="<?php echo esc_attr( $atts['alt'] ); ?>" width="640" height="640" decoding="async">
-			</div>
-		</div>
-	</section>
-	<?php
-	return (string) ob_get_clean();
-}
-
-/**
- * Feature card grid wrapper.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @param string|null           $content Inner shortcodes.
- * @return string
- */
-function fluidampr_shortcode_card_grid( $atts, $content = null ) {
-	unset( $atts );
-	return '<div class="fluid-card-grid">' . do_shortcode( $content ) . '</div>';
-}
-
-/**
- * Community card grid wrapper.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @param string|null           $content Inner shortcodes.
- * @return string
- */
-function fluidampr_shortcode_community_grid( $atts, $content = null ) {
-	unset( $atts );
-	return '<div class="fluid-community-grid">' . do_shortcode( $content ) . '</div>';
-}
-
-/**
  * Instagram feed used in the "Real builders" homepage region.
  *
  * @param array<string, string> $atts Shortcode attributes.
@@ -364,17 +163,6 @@ function fluidampr_shortcode_instagram_feed( $atts, $content = null ) {
 }
 
 /**
- * Full site footer for the Enfold footer page.
- *
- * @return string
- */
-function fluidampr_shortcode_site_footer() {
-	ob_start();
-	get_template_part( 'template-parts/footer' );
-	return (string) ob_get_clean();
-}
-
-/**
  * Constant Contact newsletter form used in the Enfold footer page.
  *
  * @return string
@@ -389,41 +177,6 @@ function fluidampr_shortcode_newsletter_form() {
 		<button type="submit" class="fluid-button"><?php esc_html_e( 'Sign Up', 'fluidampr' ); ?></button>
 		<p class="fluid-footer__form-status" role="status" hidden></p>
 	</form>
-	<?php
-	return (string) ob_get_clean();
-}
-
-/**
- * Eyebrow + heading + optional intro.
- *
- * @param array<string, string> $atts Shortcode attributes.
- * @param string|null           $content Intro text.
- * @return string
- */
-function fluidampr_shortcode_heading_group( $atts, $content = null ) {
-	$atts = shortcode_atts(
-		array(
-			'eyebrow' => '',
-			'title'   => '',
-			'align'   => 'left',
-		),
-		$atts,
-		'fluid_heading_group'
-	);
-
-	ob_start();
-	?>
-	<div class="fluid-heading-group fluid-heading-group--<?php echo esc_attr( $atts['align'] ); ?>">
-		<?php if ( $atts['eyebrow'] ) : ?>
-			<p class="fluid-heading-group__eyebrow"><?php echo esc_html( $atts['eyebrow'] ); ?></p>
-		<?php endif; ?>
-		<?php if ( $atts['title'] ) : ?>
-			<h2 class="fluid-heading-group__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-		<?php endif; ?>
-		<?php if ( $content ) : ?>
-			<div class="fluid-heading-group__intro"><?php echo wp_kses_post( wpautop( $content ) ); ?></div>
-		<?php endif; ?>
-	</div>
 	<?php
 	return (string) ob_get_clean();
 }

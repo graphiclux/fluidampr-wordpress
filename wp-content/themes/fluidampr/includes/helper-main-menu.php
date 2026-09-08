@@ -5,6 +5,9 @@
  * Loaded by Enfold via get_template_part( 'includes/helper', 'main-menu' ).
  * Parent header.php is not copied. This file only replaces the menu include.
  *
+ * Header Behavior (sticky, shrinking, stretch) comes from Theme Options via
+ * avia_header_setting() and Enfold's sticky-header script.
+ *
  * @package Fluidampr
  */
 
@@ -15,13 +18,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 $header_s = function_exists( 'avia_header_setting' ) ? avia_header_setting() : array();
 $finder   = fluidampr_page_url( 'finder_page' );
 $buy      = fluidampr_page_url( 'buy_page' );
-$aria     = 'aria-label="' . esc_attr__( 'Site header', 'fluidampr' ) . '"';
 
 if ( ! empty( $header_s['disabled'] ) ) {
 	return;
 }
+
+$shrink_factor = function_exists( 'avia_get_option' ) ? avia_get_option( 'header_shrinking_factor' ) : '';
+if ( empty( $shrink_factor ) ) {
+	$shrink_factor = '50';
+}
+$shrink_factor = apply_filters( 'avf_header_shrink_factor', $shrink_factor, $header_s );
+
+$header_classes = array( 'all_colors', 'header_color', 'fluid-header' );
+if ( ! empty( $header_s['header_class'] ) ) {
+	$header_classes[] = trim( (string) $header_s['header_class'] );
+}
+if ( function_exists( 'avia_is_dark_bg' ) ) {
+	$header_classes[] = avia_is_dark_bg( 'header_color', true );
+}
+
+$aria_label = function_exists( 'avia_get_option' ) ? avia_get_option( 'header_aria_label', '' ) : '';
+if ( '' === (string) $aria_label ) {
+	$aria_label = __( 'Site header', 'fluidampr' );
+}
+
+$markup = function_exists( 'avia_markup_helper' ) ? avia_markup_helper( array( 'context' => 'header', 'echo' => false ) ) : '';
 ?>
-<header id="header" class="header_color fluid-header" <?php echo $aria; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> <?php echo function_exists( 'avia_markup_helper' ) ? avia_markup_helper( array( 'context' => 'header', 'echo' => false ) ) : ''; ?>>
+<header id="header" class="<?php echo esc_attr( implode( ' ', array_filter( $header_classes ) ) ); ?>" aria-label="<?php echo esc_attr( $aria_label ); ?>" data-av_shrink_factor="<?php echo esc_attr( (string) $shrink_factor ); ?>" <?php echo $markup; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Enfold schema markup. ?>>
 	<div id="header_main" class="container_wrap container_wrap_logo">
 		<div class="container av-logo-container fluid-header__inner">
 			<div class="inner-container fluid-header__bar">
