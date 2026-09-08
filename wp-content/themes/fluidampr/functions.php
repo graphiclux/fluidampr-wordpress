@@ -18,6 +18,7 @@ $fluidampr_modules = array(
 	'inc/assets.php',
 	'inc/performance.php',
 	'inc/enfold-cleanup.php',
+	'inc/admin.php',
 	'inc/theme-options.php',
 	'inc/instagram.php',
 	'inc/constant-contact.php',

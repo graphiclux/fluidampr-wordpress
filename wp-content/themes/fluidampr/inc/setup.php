@@ -52,7 +52,7 @@ function fluidampr_default_options() {
 		'phone'            => '(716) 592-1000',
 		'phone_href'       => 'tel:+17165921000',
 		'email'            => 'info@fluidampr.com',
-		'address'          => "11980 Walden Ave\nSpringville, NY 14141",
+		'address'          => "180 Zoar Valley Road\nSpringville, NY 14141",
 		'facebook'         => 'https://www.facebook.com/Fluidampr',
 		'instagram'        => 'https://www.instagram.com/theoriginalfluidampr/',
 		'youtube'          => 'https://www.youtube.com/user/Fluidampr',
@@ -60,7 +60,7 @@ function fluidampr_default_options() {
 		'finder_page'      => '/find-your-damper/',
 		'buy_page'         => '/where-to-buy/',
 		'catalog_page'     => '/products/',
-		'newsletter_note'           => __( 'Product updates, tech tips, and new applications.', 'fluidampr' ),
+		'newsletter_note'           => __( 'Get the latest updates on new equipment arrivals and market insights delivered to you.', 'fluidampr' ),
 		'instagram_access_token'    => '',
 		'instagram_feed_shortcode'  => '',
 	);
@@ -80,21 +80,11 @@ function fluidampr_get_option( $key ) {
 }
 
 /**
- * Theme logo URL, preferring Enfold/custom logo when set.
+ * Logo URL from Enfold Theme Options (Enfold → Theme Options → Logo).
  *
  * @return string
  */
 function fluidampr_logo_url() {
-	$custom = get_theme_mod( 'custom_logo' );
-
-	if ( $custom ) {
-		$url = wp_get_attachment_image_url( (int) $custom, 'full' );
-
-		if ( $url ) {
-			return $url;
-		}
-	}
-
 	if ( function_exists( 'avia_get_option' ) ) {
 		$enfold_logo = avia_get_option( 'logo' );
 
@@ -109,5 +99,33 @@ function fluidampr_logo_url() {
 		}
 	}
 
+	$custom = get_theme_mod( 'custom_logo' );
+
+	if ( $custom ) {
+		$url = wp_get_attachment_image_url( (int) $custom, 'full' );
+
+		if ( $url ) {
+			return $url;
+		}
+	}
+
 	return FLUIDAMPR_THEME_URI . '/assets/images/logo.png';
+}
+
+/**
+ * Enfold Theme Options logo markup (same output Enfold uses in the header).
+ *
+ * @param string $tag Heading/wrapper tag Enfold wraps the logo in.
+ * @return string
+ */
+function fluidampr_enfold_logo_html( $tag = 'span' ) {
+	if ( ! function_exists( 'avia_logo' ) ) {
+		$url = fluidampr_logo_url();
+
+		return '<a class="fluid-header__logo" href="' . esc_url( home_url( '/' ) ) . '"><img src="' . esc_url( $url ) . '" alt="' . esc_attr( get_bloginfo( 'name' ) ) . '" decoding="async"></a>';
+	}
+
+	$fallback = defined( 'AVIA_BASE_URL' ) ? AVIA_BASE_URL . 'images/layout/logo.png' : '';
+
+	return (string) avia_logo( $fallback, '', $tag, true );
 }

@@ -91,6 +91,26 @@
 		});
 	}
 
+	function syncSelectValueClass(select) {
+		if (!select) {
+			return;
+		}
+
+		select.classList.toggle('has-value', !!select.value);
+	}
+
+	function bindSelectValueClass(select) {
+		if (!select || select.dataset.fluidValueBound) {
+			return;
+		}
+
+		select.dataset.fluidValueBound = '1';
+		select.addEventListener('change', function () {
+			syncSelectValueClass(select);
+		});
+		syncSelectValueClass(select);
+	}
+
 	function fillSelect(select, items, placeholder) {
 		if (!select) {
 			return;
@@ -110,10 +130,15 @@
 			select.appendChild(option);
 		});
 
-		select.disabled = !items || !items.length;
+		select.disabled = false;
+		select.classList.toggle('is-waiting', !items || !items.length);
+		select.setAttribute('aria-disabled', (!items || !items.length) ? 'true' : 'false');
 		if (current && items && items.indexOf(current) !== -1) {
 			select.value = current;
 		}
+
+		bindSelectValueClass(select);
+		syncSelectValueClass(select);
 	}
 
 	function getJson(url) {
@@ -192,6 +217,19 @@
 				fillSelect(submodel, (payload && payload.data) || [], 'Submodel');
 			});
 		});
+
+		qsa('form[data-finder-form]', root).forEach(function (form) {
+			form.addEventListener('submit', function (event) {
+				event.preventDefault();
+				var url = new URL(form.getAttribute('action'), window.location.origin);
+				qsa('select, input', form).forEach(function (field) {
+					if (field.name && field.value && !field.classList.contains('fluid-hp')) {
+						url.searchParams.set(field.name, field.value);
+					}
+				});
+				window.location.href = url.toString();
+			});
+		});
 	}
 
 	onReady(function () {
@@ -207,13 +245,126 @@
 
 		qsa('[data-fluid-finder]').forEach(function (root) {
 			bindFinderTabs(root);
+			qsa('select[data-finder-field]', root).forEach(function (select) {
+				bindSelectValueClass(select);
+				if (!select.value) {
+					select.classList.add('is-waiting');
+					select.setAttribute('aria-disabled', 'true');
+				}
+			});
 			if (root.getAttribute('data-mode') !== 'full') {
 				bindCompactFinder(root);
 			}
 		});
 
+		prefillPluginFinder();
+
 		qsa('[data-fluid-newsletter]').forEach(bindNewsletterForm);
 	});
+
+	function queryParam(name) {
+		return new URLSearchParams(window.location.search).get(name) || '';
+	}
+
+	function canonicalOptionValue(select, wanted) {
+		if (!select || !wanted) {
+			return '';
+		}
+
+		var lower = String(wanted).toLowerCase();
+		var i;
+
+		for (i = 0; i < select.options.length; i += 1) {
+			if (String(select.options[i].value).toLowerCase() === lower) {
+				return select.options[i].value;
+			}
+		}
+
+		return '';
+	}
+
+	function waitForOption(select, wanted, timeout) {
+		return new Promise(function (resolve) {
+			if (!select || !wanted) {
+				resolve('');
+				return;
+			}
+
+			var started = Date.now();
+			var timer = window.setInterval(function () {
+				var found = canonicalOptionValue(select, wanted);
+
+				if (found) {
+					window.clearInterval(timer);
+					resolve(found);
+					return;
+				}
+
+				if (Date.now() - started > (timeout || 12000)) {
+					window.clearInterval(timer);
+					resolve('');
+				}
+			}, 100);
+		});
+	}
+
+	function setSelectValue(select, value) {
+		var actual = canonicalOptionValue(select, value);
+
+		if (!select || !actual) {
+			return false;
+		}
+
+		select.disabled = false;
+		select.value = actual;
+		syncSelectValueClass(select);
+		select.dispatchEvent(new Event('change', { bubbles: true }));
+		return select.value === actual;
+	}
+
+	function prefillPluginFinder() {
+		var year = queryParam('fy_year') || queryParam('year');
+		var make = queryParam('fy_make') || queryParam('make');
+		var model = queryParam('fy_model') || queryParam('model');
+		var submodel = queryParam('fy_submodel') || queryParam('submodel');
+
+		if (!year) {
+			return;
+		}
+
+		var yearSelect = qs('[data-fluidampr-field="year"]');
+		var makeSelect = qs('[data-fluidampr-field="make"]');
+		var modelSelect = qs('[data-fluidampr-field="model"]');
+		var submodelSelect = qs('[data-fluidampr-field="submodel"]');
+
+		if (!yearSelect) {
+			return;
+		}
+
+		waitForOption(yearSelect, year).then(function (yearValue) {
+			if (!yearValue || !setSelectValue(yearSelect, yearValue) || !make) {
+				return;
+			}
+
+			return waitForOption(makeSelect, make).then(function (makeValue) {
+				if (!makeValue || !setSelectValue(makeSelect, makeValue) || !model) {
+					return;
+				}
+
+				return waitForOption(modelSelect, model).then(function (modelValue) {
+					if (!modelValue || !setSelectValue(modelSelect, modelValue) || !submodel) {
+						return;
+					}
+
+					return waitForOption(submodelSelect, submodel, 4000).then(function (subValue) {
+						if (subValue) {
+							setSelectValue(submodelSelect, subValue);
+						}
+					});
+				});
+			});
+		});
+	}
 
 	function bindNewsletterForm(form) {
 		var status = qs('.fluid-footer__form-status', form);

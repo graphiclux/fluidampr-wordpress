@@ -29,6 +29,7 @@ function fluidampr_register_shortcodes() {
 	add_shortcode( 'fluid_community_grid', 'fluidampr_shortcode_community_grid' );
 	add_shortcode( 'fluid_instagram_feed', 'fluidampr_shortcode_instagram_feed' );
 	add_shortcode( 'fluid_site_footer', 'fluidampr_shortcode_site_footer' );
+	add_shortcode( 'fluid_newsletter_form', 'fluidampr_shortcode_newsletter_form' );
 	add_shortcode( 'fluid_heading_group', 'fluidampr_shortcode_heading_group' );
 }
 add_action( 'init', 'fluidampr_register_shortcodes' );
@@ -77,25 +78,25 @@ function fluidampr_shortcode_finder_panel( $atts ) {
 						<form class="fluid-finder__form" data-finder-form="vehicle" action="<?php echo esc_url( fluidampr_page_url( 'finder_page' ) ); ?>" method="get">
 							<label class="fluid-finder__field">
 								<span class="screen-reader-text"><?php esc_html_e( 'Year', 'fluidampr' ); ?></span>
-								<select name="year" data-finder-field="year">
+								<select name="fy_year" data-finder-field="year">
 									<option value=""><?php esc_html_e( 'Year', 'fluidampr' ); ?></option>
 								</select>
 							</label>
 							<label class="fluid-finder__field">
 								<span class="screen-reader-text"><?php esc_html_e( 'Make', 'fluidampr' ); ?></span>
-								<select name="make" data-finder-field="make" disabled>
+								<select name="fy_make" data-finder-field="make">
 									<option value=""><?php esc_html_e( 'Make', 'fluidampr' ); ?></option>
 								</select>
 							</label>
 							<label class="fluid-finder__field">
 								<span class="screen-reader-text"><?php esc_html_e( 'Model', 'fluidampr' ); ?></span>
-								<select name="model" data-finder-field="model" disabled>
+								<select name="fy_model" data-finder-field="model">
 									<option value=""><?php esc_html_e( 'Model', 'fluidampr' ); ?></option>
 								</select>
 							</label>
 							<label class="fluid-finder__field">
 								<span class="screen-reader-text"><?php esc_html_e( 'Submodel', 'fluidampr' ); ?></span>
-								<select name="submodel" data-finder-field="submodel" disabled>
+								<select name="fy_submodel" data-finder-field="submodel">
 									<option value=""><?php esc_html_e( 'Submodel', 'fluidampr' ); ?></option>
 								</select>
 							</label>
@@ -111,7 +112,7 @@ function fluidampr_shortcode_finder_panel( $atts ) {
 					<form class="fluid-finder__form fluid-finder__form--single" action="<?php echo esc_url( fluidampr_page_url( 'finder_page' ) ); ?>" method="get">
 						<label class="fluid-finder__field fluid-finder__field--wide">
 							<span class="screen-reader-text"><?php esc_html_e( 'Engine', 'fluidampr' ); ?></span>
-							<input type="search" name="engine" placeholder="<?php esc_attr_e( 'Engine family, displacement, or code', 'fluidampr' ); ?>">
+							<input type="search" name="fy_engine" placeholder="<?php esc_attr_e( 'Engine family, displacement, or code', 'fluidampr' ); ?>">
 						</label>
 						<div class="fluid-finder__actions">
 							<a class="fluid-finder__browse" href="<?php echo esc_url( $browse_url ); ?>"><?php echo esc_html( $atts['browse_label'] ); ?> <span aria-hidden="true">›</span></a>
@@ -124,7 +125,7 @@ function fluidampr_shortcode_finder_panel( $atts ) {
 					<form class="fluid-finder__form fluid-finder__form--single" action="<?php echo esc_url( fluidampr_page_url( 'finder_page' ) ); ?>" method="get">
 						<label class="fluid-finder__field fluid-finder__field--wide">
 							<span class="screen-reader-text"><?php esc_html_e( 'Part number', 'fluidampr' ); ?></span>
-							<input type="search" name="part" placeholder="<?php esc_attr_e( 'Enter a part number', 'fluidampr' ); ?>">
+							<input type="search" name="fy_part" placeholder="<?php esc_attr_e( 'Enter a part number', 'fluidampr' ); ?>">
 						</label>
 						<div class="fluid-finder__actions">
 							<a class="fluid-finder__browse" href="<?php echo esc_url( $browse_url ); ?>"><?php echo esc_html( $atts['browse_label'] ); ?> <span aria-hidden="true">›</span></a>
@@ -370,6 +371,25 @@ function fluidampr_shortcode_instagram_feed( $atts, $content = null ) {
 function fluidampr_shortcode_site_footer() {
 	ob_start();
 	get_template_part( 'template-parts/footer' );
+	return (string) ob_get_clean();
+}
+
+/**
+ * Constant Contact newsletter form used in the Enfold footer page.
+ *
+ * @return string
+ */
+function fluidampr_shortcode_newsletter_form() {
+	ob_start();
+	?>
+	<form class="fluid-footer__form" data-fluid-newsletter method="post" action="<?php echo esc_url( rest_url( 'fluidampr/v1/newsletter' ) ); ?>" novalidate>
+		<label class="screen-reader-text" for="fluid-newsletter-email"><?php esc_html_e( 'Email address', 'fluidampr' ); ?></label>
+		<input class="fluid-hp" type="text" name="company" value="" tabindex="-1" autocomplete="off" aria-hidden="true">
+		<input id="fluid-newsletter-email" type="email" name="email" required placeholder="<?php esc_attr_e( 'Email address', 'fluidampr' ); ?>" autocomplete="email">
+		<button type="submit" class="fluid-button"><?php esc_html_e( 'Sign Up', 'fluidampr' ); ?></button>
+		<p class="fluid-footer__form-status" role="status" hidden></p>
+	</form>
+	<?php
 	return (string) ob_get_clean();
 }
 

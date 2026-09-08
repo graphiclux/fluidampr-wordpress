@@ -60,26 +60,25 @@ function fluidampr_instagram_handle() {
  */
 function fluidampr_instagram_fallback_items() {
 	$profile = fluidampr_get_option( 'instagram' );
-	$handle  = '@' . fluidampr_instagram_handle();
 
 	return array(
 		array(
 			'permalink' => $profile,
 			'image'     => FLUIDAMPR_THEME_URI . '/assets/images/community-hemi.jpg',
 			'title'     => __( '2,800HP Gen III HEMI', 'fluidampr' ),
-			'handle'    => $handle,
+			'handle'    => '@boostedbrad',
 		),
 		array(
 			'permalink' => $profile,
 			'image'     => FLUIDAMPR_THEME_URI . '/assets/images/community-ecoboost.jpg',
 			'title'     => __( '6.7 Power Stroke Build', 'fluidampr' ),
-			'handle'    => $handle,
+			'handle'    => '@freedom_factory',
 		),
 		array(
 			'permalink' => $profile,
-			'image'     => FLUIDAMPR_THEME_URI . '/assets/images/cta-engine.jpg',
+			'image'     => FLUIDAMPR_THEME_URI . '/assets/images/community-ls3.jpg',
 			'title'     => __( 'LS3 Road Course', 'fluidampr' ),
-			'handle'    => $handle,
+			'handle'    => '@stevetorrisracing',
 		),
 	);
 }

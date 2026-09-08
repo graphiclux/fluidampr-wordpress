@@ -12,9 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div id="fluid-nav" class="fluid-nav" hidden>
 	<div class="fluid-nav__panel" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Site menu', 'fluidampr' ); ?>">
 		<div class="fluid-nav__top">
-			<a class="fluid-header__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-				<img src="<?php echo esc_url( fluidampr_logo_url() ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="180" height="50">
-			</a>
+			<div class="fluid-header__logo">
+				<?php echo fluidampr_enfold_logo_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Enfold logo HTML. ?>
+			</div>
 			<button type="button" class="fluid-header__icon" data-fluid-nav-close>
 				<span class="screen-reader-text"><?php esc_html_e( 'Close menu', 'fluidampr' ); ?></span>
 				<?php echo fluidampr_icon( 'close' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>

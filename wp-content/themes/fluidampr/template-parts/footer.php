@@ -18,10 +18,12 @@ $year    = gmdate( 'Y' );
 	<div class="fluid-footer__grid">
 		<div class="fluid-footer__brand">
 			<a class="fluid-footer__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
-				<img src="<?php echo esc_url( fluidampr_logo_url() ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="180" height="50">
+				<img src="<?php echo esc_url( fluidampr_logo_url() ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="270" height="95">
 			</a>
 			<?php if ( $address ) : ?>
-				<p class="fluid-footer__address"><?php echo nl2br( esc_html( $address ) ); ?></p>
+				<p class="fluid-footer__address">
+					<a href="<?php echo esc_url( 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode( str_replace( array( "\r", "\n" ), ', ', $address ) ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo nl2br( esc_html( $address ) ); ?></a>
+				</p>
 			<?php endif; ?>
 			<ul class="fluid-footer__contact">
 				<?php if ( $phone ) : ?>
@@ -94,7 +96,7 @@ $year    = gmdate( 'Y' );
 				<p class="fluid-footer__form-status" role="status" hidden></p>
 			</form>
 			<div class="fluid-footer__usa">
-				<img src="<?php echo esc_url( FLUIDAMPR_THEME_URI . '/assets/images/made-in-usa.png' ); ?>" alt="<?php esc_attr_e( 'Made in the USA', 'fluidampr' ); ?>" width="72" height="54" loading="lazy" decoding="async">
+				<img src="<?php echo esc_url( FLUIDAMPR_THEME_URI . '/assets/images/made-in-usa.png' ); ?>" alt="<?php esc_attr_e( 'Made in the USA', 'fluidampr' ); ?>" width="60" height="31" loading="lazy" decoding="async">
 				<span><?php esc_html_e( 'Made in the USA', 'fluidampr' ); ?></span>
 			</div>
 		</div>

@@ -57,10 +57,18 @@ function fluidampr_enqueue_assets() {
 		fluidampr_asset_version( $css_rel )
 	);
 
+	fluidampr_ensure_sema_finder_assets();
+
+	$js_deps = array();
+
+	if ( wp_script_is( 'fluidampr-finder', 'enqueued' ) ) {
+		$js_deps[] = 'fluidampr-finder';
+	}
+
 	wp_enqueue_script(
 		'fluidampr-site',
 		FLUIDAMPR_THEME_URI . '/' . $js_rel,
-		array(),
+		$js_deps,
 		fluidampr_asset_version( $js_rel ),
 		array(
 			'in_footer' => true,
@@ -101,12 +109,78 @@ function fluidampr_enqueue_assets() {
 add_action( 'wp_enqueue_scripts', 'fluidampr_enqueue_assets', 1000002 );
 
 /**
+ * Load the SEMA finder script when the theme nests [fluidampr_finder]
+ * inside [fluid_finder_panel]. The plugin only auto-enqueues when that
+ * tag is in post_content, which Enfold ALB pages do not store.
+ *
+ * @return void
+ */
+function fluidampr_ensure_sema_finder_assets() {
+	if ( ! defined( 'FLUIDAMPR_SEMA_INTEGRATION_URL' ) || ! is_singular() ) {
+		return;
+	}
+
+	$post = get_queried_object();
+
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	$blob = (string) $post->post_content . (string) get_post_meta( $post->ID, '_aviaLayoutBuilderCleanData', true );
+
+	if ( false === strpos( $blob, 'fluid_finder_panel' ) && false === strpos( $blob, 'fluidampr_finder' ) ) {
+		return;
+	}
+
+	$handle = 'fluidampr-finder';
+	$ver    = defined( 'FLUIDAMPR_SEMA_INTEGRATION_VERSION' ) ? FLUIDAMPR_SEMA_INTEGRATION_VERSION : FLUIDAMPR_THEME_VERSION;
+
+	wp_enqueue_style(
+		$handle,
+		FLUIDAMPR_SEMA_INTEGRATION_URL . 'assets/finder.css',
+		array(),
+		$ver
+	);
+
+	wp_enqueue_script(
+		$handle,
+		FLUIDAMPR_SEMA_INTEGRATION_URL . 'assets/finder.js',
+		array(),
+		$ver,
+		true
+	);
+
+	if ( ! wp_script_is( $handle, 'enqueued' ) ) {
+		return;
+	}
+
+	$localized = wp_scripts()->get_data( $handle, 'data' );
+
+	if ( $localized ) {
+		return;
+	}
+
+	$hide_prices = class_exists( '\Fluidampr\SemaIntegration\Catalog\CatalogModeSettings' )
+		&& \Fluidampr\SemaIntegration\Catalog\CatalogModeSettings::hide_prices();
+
+	wp_localize_script(
+		$handle,
+		'fluidamprFinderSettings',
+		array(
+			'restUrl'    => esc_url_raw( rest_url( 'fluidampr-sema/v1/' ) ),
+			'hidePrices' => $hide_prices ? '1' : '0',
+			'i18n'       => array(),
+		)
+	);
+}
+
+/**
  * Preload the latin heading/body font and logo for a faster first paint.
  *
  * @return void
  */
 function fluidampr_resource_hints() {
-	$font = FLUIDAMPR_THEME_URI . '/assets/fonts/plus-jakarta-sans-latin.woff2';
+	$font = FLUIDAMPR_THEME_URI . '/assets/fonts/titillium-web-700italic-latin.woff2';
 
 	printf(
 		"<link rel='preload' href='%s' as='font' type='font/woff2' crossorigin>\n",

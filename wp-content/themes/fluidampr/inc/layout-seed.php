@@ -105,6 +105,10 @@ function fluidampr_seed_site() {
 		fluidampr_assign_enfold_footer_page( (int) $ids['site-footer'] );
 	}
 
+	if ( ! empty( $ids['error-404'] ) ) {
+		fluidampr_assign_enfold_404_page( (int) $ids['error-404'] );
+	}
+
 	update_option( 'fluidampr_seeded', 1 );
 	set_theme_mod( 'fluidampr_instagram', 'https://www.instagram.com/theoriginalfluidampr/' );
 }
@@ -195,6 +199,27 @@ function fluidampr_assign_enfold_footer_page( $page_id ) {
 }
 
 /**
+ * Point Enfold at the seeded 404 page (Theme Options → Custom Error 404 Page).
+ *
+ * @param int $page_id 404 page ID.
+ * @return void
+ */
+function fluidampr_assign_enfold_404_page( $page_id ) {
+	$page_id = (int) $page_id;
+
+	if ( $page_id < 1 || ! function_exists( 'avia_update_option' ) ) {
+		return;
+	}
+
+	update_option( 'fluidampr_404_page_id', $page_id );
+
+	avia_update_option( 'error404_custom', 'error404_custom' );
+	avia_update_option( 'error404_page', (string) $page_id );
+	avia_update_option( array( 'avia', 'error404_custom' ), 'error404_custom' );
+	avia_update_option( array( 'avia', 'error404_page' ), (string) $page_id );
+}
+
+/**
  * Create primary and footer menus from seeded pages.
  *
  * @param array<string, int> $ids Page IDs keyed by slug.
@@ -247,11 +272,17 @@ function fluidampr_seed_menus( $ids ) {
 				continue;
 			}
 
+			$title = get_the_title( $ids[ $slug ] );
+
+			if ( 'where-to-buy' === $slug && 'fluidampr_footer_1' === $location ) {
+				$title = __( 'Dealers', 'fluidampr' );
+			}
+
 			wp_update_nav_menu_item(
 				$menu_id,
 				0,
 				array(
-					'menu-item-title'     => get_the_title( $ids[ $slug ] ),
+					'menu-item-title'     => $title,
 					'menu-item-object-id' => $ids[ $slug ],
 					'menu-item-object'    => 'page',
 					'menu-item-type'      => 'post_type',

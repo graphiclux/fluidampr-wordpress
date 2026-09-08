@@ -4,7 +4,7 @@
  *
  * Seeded pages are built from native Enfold elements so editors can change
  * copy, images, buttons, and layout in the Avia builder. Custom shortcodes
- * in Text Blocks are the product finder, the Instagram feed, and the footer.
+ * in Text Blocks are the product finder, Instagram feed, and newsletter form.
  *
  * @package Fluidampr
  */
@@ -70,7 +70,7 @@ function fluidampr_alb_section( $inner, $atts = array() ) {
  * @param string $class Extra class.
  * @return string
  */
-function fluidampr_alb_col( $span, $first, $inner, $class = '' ) {
+function fluidampr_alb_col( $span, $first, $inner, $class = '', $atts = array() ) {
 	$attr = '';
 
 	if ( $first ) {
@@ -78,7 +78,17 @@ function fluidampr_alb_col( $span, $first, $inner, $class = '' ) {
 	}
 
 	if ( $class ) {
-		$attr .= " custom_class='" . esc_attr( $class ) . "'";
+		$atts['custom_class'] = isset( $atts['custom_class'] ) && '' !== $atts['custom_class']
+			? trim( $atts['custom_class'] . ' ' . $class )
+			: $class;
+	}
+
+	foreach ( $atts as $key => $value ) {
+		if ( null === $value || false === $value || '' === $value ) {
+			continue;
+		}
+
+		$attr .= ' ' . $key . "='" . esc_attr( (string) $value ) . "'";
 	}
 
 	return '[av_' . $span . $attr . ']' . $inner . '[/av_' . $span . ']';
@@ -141,7 +151,7 @@ function fluidampr_alb_button( $label, $url, $class = 'fluid-button' ) {
 	$atts = array(
 		'label'       => $label,
 		'link'        => 'manually,' . $url,
-		'size'        => 'large',
+		'size'        => 'small',
 		'position'    => 'left',
 		'color'       => 'theme-color',
 		'icon_select' => 'no',
@@ -212,8 +222,11 @@ function fluidampr_alb_image( $src, $alt = '', $align = 'center', $link = '' ) {
 	);
 
 	if ( $link ) {
-		$atts['link']   = 'manually,' . $link;
-		$atts['target'] = '_blank';
+		$atts['link'] = 'manually,' . $link;
+
+		if ( 0 === strpos( $link, 'http' ) && 0 !== strpos( $link, home_url() ) ) {
+			$atts['target'] = '_blank';
+		}
 	}
 
 	return fluidampr_sc( 'av_image', $atts, '' );
@@ -241,7 +254,7 @@ function fluidampr_url( $path ) {
 function fluidampr_seed_page_definitions() {
 	$hero = fluidampr_theme_img( 'hero-damper.jpg' );
 	$ig   = 'https://www.instagram.com/theoriginalfluidampr/';
-	$shop = fluidampr_theme_img( 'cta-engine.jpg' );
+	$shop = fluidampr_theme_img( 'cta-workshop.jpg' );
 
 	$home = fluidampr_alb_section(
 		fluidampr_alb_col(
@@ -299,26 +312,45 @@ function fluidampr_seed_page_definitions() {
 				array(
 					'tag'          => 'h2',
 					'heading'      => 'Why choose Fluidampr',
+					'size'         => '32',
 					'color'        => 'custom-color-heading',
 					'custom_font'  => '#ffffff',
 					'custom_class' => 'fluid-heading fluid-cta-heading',
 				),
 				''
 			)
-			. fluidampr_alb_text( '<p>Precision-engineered in the USA for broad-RPM protection, SFI 18.1 certification, and engines that will keep getting faster.</p>' )
+			. fluidampr_alb_text( '<p>Trusted by builders, racers, and OEMs for over 30 years. Every damper is precision-engineered in the USA to reduce vibration and protect what matters most in your build.</p>' )
 			. fluidampr_alb_button( 'Learn more about Fluidampr', fluidampr_url( '/technology/' ) ),
-			'fluid-cta-copy'
+			'fluid-cta-copy',
+			array(
+				'min_height'          => 'av-equal-height-column',
+				'vertical_alignment'  => 'av-align-middle',
+				'space'               => 'no_margin',
+				'min_col_height'      => '210',
+				'background'          => 'bg_color',
+				'background_color'    => '#000013',
+				'padding'             => '24px,30px,24px,30px',
+			)
 		)
 		. fluidampr_alb_col(
 			'one_half',
 			false,
-			fluidampr_alb_image( $shop, 'Fluidampr performance damper on the engine', 'center' ),
-			'fluid-cta-media'
+			'',
+			'fluid-cta-media',
+			array(
+				'src'                 => $shop,
+				'attachment_size'     => 'full',
+				'background_repeat'   => 'stretch',
+				'background_position' => 'center right',
+				'padding'             => '0px',
+				'min_col_height'      => '210',
+				'alt_attr'            => 'Technician installing a Fluidampr damper',
+			)
 		),
 		array(
 			'padding'      => 'no-padding',
-			'color'        => 'alternate_color',
-			'custom_bg'    => '#000013',
+			'color'        => 'main_color',
+			'custom_bg'    => '#ffffff',
 			'custom_class' => 'fluid-section fluid-cta-section',
 		)
 	);
@@ -425,7 +457,7 @@ function fluidampr_seed_page_definitions() {
 			'one_half',
 			true,
 			fluidampr_alb_heading( 'Contact', 'Company' )
-			. fluidampr_alb_text( '<p>11980 Walden Ave<br>Springville, NY 14141<br>(716) 592-1000<br>info@fluidampr.com</p>' )
+			. fluidampr_alb_text( '<p>180 Zoar Valley Road<br>Springville, NY 14141<br>(716) 592-1000<br>sales@fluidampr.com</p>' )
 		)
 		. fluidampr_alb_col(
 			'one_half',
@@ -482,15 +514,130 @@ function fluidampr_seed_page_definitions() {
 		array( 'custom_class' => 'fluid-section fluid-interior' )
 	);
 
-	$footer = fluidampr_alb_section(
+	$footer  = fluidampr_alb_section(
 		fluidampr_alb_col(
-			'one_full',
+			'one_fourth',
 			true,
-			fluidampr_alb_text( '[fluid_site_footer]', 'fluid-footer-embed' )
+			fluidampr_alb_image( fluidampr_logo_url(), get_bloginfo( 'name' ), 'left', home_url( '/' ) )
+			. fluidampr_alb_text(
+				'<p class="fluid-footer-contact"><a class="fluid-footer-pin" href="https://www.google.com/maps/search/?api=1&amp;query=180+Zoar+Valley+Road%2C+Springville%2C+NY+14141" target="_blank" rel="noopener noreferrer">180 Zoar Valley Road<br>Springville, NY 14141</a><br><a href="tel:+17165921000">(716) 592-1000</a><br><a href="mailto:sales@fluidampr.com">sales@fluidampr.com</a></p>',
+				'fluid-footer-contact-block'
+			),
+			'fluid-footer-brand'
+		)
+		. fluidampr_alb_col(
+			'one_fourth',
+			false,
+			fluidampr_alb_heading( 'Products', '', 'h3', 'fluid-heading fluid-footer-heading' )
+			. fluidampr_alb_text(
+				'<p><a href="' . esc_url( fluidampr_url( '/find-your-damper/' ) ) . '">Find Your Damper</a><br><a href="' . esc_url( fluidampr_url( '/instructions/' ) ) . '">Instructions</a><br><a href="' . esc_url( fluidampr_url( '/where-to-buy/' ) ) . '">Dealers</a></p>',
+				'fluid-footer-links'
+			),
+			'fluid-footer-products'
+		)
+		. fluidampr_alb_col(
+			'one_fourth',
+			false,
+			fluidampr_alb_heading( 'Technology', '', 'h3', 'fluid-heading fluid-footer-heading' )
+			. fluidampr_alb_text(
+				'<p><a href="' . esc_url( fluidampr_url( '/support/' ) ) . '">Support / FAQ</a><br><a href="' . esc_url( fluidampr_url( '/news/' ) ) . '">News</a><br><a href="' . esc_url( fluidampr_url( '/contact/' ) ) . '">Contact</a></p>',
+				'fluid-footer-links'
+			),
+			'fluid-footer-technology'
+		)
+		. fluidampr_alb_col(
+			'one_fourth',
+			false,
+			fluidampr_sc(
+				'av_heading',
+				array(
+					'tag'          => 'h3',
+					'heading'      => 'Newsletter',
+					'color'        => 'custom-color-heading',
+					'custom_font'  => '#005DA9',
+					'custom_class' => 'fluid-heading fluid-footer-heading fluid-footer-heading--accent',
+				),
+				''
+			)
+			. fluidampr_alb_text( '<p>Get the latest updates on new equipment arrivals and market insights delivered to your inbox.</p>' )
+			. fluidampr_alb_text( '[fluid_newsletter_form]', 'fluid-newsletter-embed' )
+			. ( file_exists( FLUIDAMPR_THEME_PATH . '/assets/images/made-in-usa.png' )
+				? fluidampr_alb_image( fluidampr_theme_img( 'made-in-usa.png' ), 'Made in the USA', 'left' )
+				: '' )
+			. fluidampr_alb_text( '<p class="fluid-footer-usa-label">Made in the USA</p>' ),
+			'fluid-footer-newsletter'
+		),
+		array(
+			'padding'      => 'small',
+			'custom_class' => 'fluid-section fluid-footer-section',
+		)
+	);
+
+	$footer .= fluidampr_alb_section(
+		fluidampr_alb_col(
+			'two_third',
+			true,
+			fluidampr_alb_text(
+				'<p class="fluid-footer-credits">© ' . esc_html( gmdate( 'Y' ) ) . ' Fluidampr. All rights reserved. <a href="' . esc_url( fluidampr_url( '/privacy-policy/' ) ) . '">Privacy policy</a> <a href="' . esc_url( fluidampr_url( '/terms/' ) ) . '">Terms of service</a> <a href="' . esc_url( fluidampr_url( '/privacy-policy/' ) ) . '">Cookies settings</a></p>',
+				'fluid-footer-legal-block'
+			),
+			'fluid-footer-legal'
+		)
+		. fluidampr_alb_col(
+			'one_third',
+			false,
+			fluidampr_alb_text(
+				'<p class="fluid-footer-social"><a class="fluid-footer-social__link fluid-footer-social__link--facebook" href="' . esc_url( fluidampr_get_option( 'facebook' ) ) . '" rel="noopener noreferrer" target="_blank"><span class="screen-reader-text">Facebook</span></a> <a class="fluid-footer-social__link fluid-footer-social__link--instagram" href="' . esc_url( fluidampr_get_option( 'instagram' ) ) . '" rel="noopener noreferrer" target="_blank"><span class="screen-reader-text">Instagram</span></a> <a class="fluid-footer-social__link fluid-footer-social__link--youtube" href="' . esc_url( fluidampr_get_option( 'youtube' ) ) . '" rel="noopener noreferrer" target="_blank"><span class="screen-reader-text">YouTube</span></a></p>',
+				'fluid-footer-social-block'
+			),
+			'fluid-footer-social'
 		),
 		array(
 			'padding'      => 'no-padding',
-			'custom_class' => 'fluid-section fluid-footer-section',
+			'custom_class' => 'fluid-section fluid-footer-socket',
+		)
+	);
+
+	$error404 = fluidampr_alb_section(
+		fluidampr_alb_col(
+			'one_half',
+			true,
+			fluidampr_alb_text( '<p class="fluid-404-code">404</p>' )
+			. fluidampr_alb_heading( 'This page threw a harmonic.', '', 'h1', 'fluid-heading fluid-404-heading' )
+			. fluidampr_alb_text( '<p>We scanned every damper from idle to redline and this URL is still out of balance. It may have been deleted, mistyped, or shaken loose at high RPM.</p><p>Search the site, find a damper, or head back to a page that still has all its fasteners.</p>' )
+			. fluidampr_sc(
+				'avia_sc_search',
+				array(
+					'placeholder'  => 'Search by page, product, or part number…',
+					'label_text'   => 'Search',
+					'icon_display' => 'button',
+					'display'      => 'classic',
+					'custom_class' => 'fluid-404-search',
+				)
+			)
+			. fluidampr_alb_button( 'Find Your Damper', fluidampr_url( '/find-your-damper/' ) )
+			. fluidampr_alb_button( 'Take me home', home_url( '/' ), 'fluid-button fluid-button--outline' ),
+			'fluid-404-copy'
+		)
+		. fluidampr_alb_col(
+			'one_half',
+			false,
+			fluidampr_alb_image( $hero, 'Fluidampr performance damper', 'center' ),
+			'fluid-404-media'
+		),
+		array(
+			'padding'      => 'large',
+			'custom_class' => 'fluid-section fluid-404-hero',
+		)
+	);
+
+	$error404 .= fluidampr_alb_section(
+		fluidampr_alb_col( 'one_third', true, fluidampr_alb_iconbox( 'ue842', 'Find Your Damper', 'Match a viscous damper to your year, make, model, and engine — before the next misfire.', fluidampr_url( '/find-your-damper/' ), 'Start the finder', 'link' ) )
+		. fluidampr_alb_col( 'one_third', false, fluidampr_alb_iconbox( 'ue810', 'Browse the lineup', 'Diesel, domestic, and import performance. The catalog is still very much in balance.', fluidampr_url( '/products/' ), 'See products', 'link' ) )
+		. fluidampr_alb_col( 'one_third', false, fluidampr_alb_iconbox( 'ue8de', 'Ask tech support', 'Fitment questions, install notes, and the kind of answers builders actually need.', fluidampr_url( '/contact/' ), 'Contact us', 'link' ) ),
+		array(
+			'padding'      => 'default',
+			'custom_class' => 'fluid-section fluid-404-cards fluid-home-cards',
 		)
 	);
 
@@ -512,6 +659,11 @@ function fluidampr_seed_page_definitions() {
 			'title'     => 'Footer',
 			'is_footer' => true,
 			'content'   => $footer,
+		),
+		'error-404'        => array(
+			'title'    => 'Page not found',
+			'is_404'   => true,
+			'content'  => $error404,
 		),
 	);
 }

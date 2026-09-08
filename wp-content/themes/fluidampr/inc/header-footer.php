@@ -60,5 +60,16 @@ function fluidampr_page_url( $option_key ) {
 		return $path;
 	}
 
+	$slug = trim( (string) $path, '/' );
+	$page = $slug ? get_page_by_path( $slug ) : null;
+
+	if ( $page instanceof WP_Post ) {
+		$permalink = get_permalink( $page );
+
+		if ( $permalink ) {
+			return $permalink;
+		}
+	}
+
 	return home_url( $path );
 }

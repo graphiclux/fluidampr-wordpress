@@ -109,11 +109,19 @@ function fluidampr_exclude_footer_page_from_search( $query ) {
 	}
 
 	$footer_id = (int) get_option( 'fluidampr_footer_page_id', 0 );
+	$error_id  = (int) get_option( 'fluidampr_404_page_id', 0 );
+	$not_in    = $query->get( 'post__not_in' );
+	$not_in    = is_array( $not_in ) ? $not_in : array();
 
 	if ( $footer_id ) {
-		$not_in = $query->get( 'post__not_in' );
-		$not_in = is_array( $not_in ) ? $not_in : array();
 		$not_in[] = $footer_id;
+	}
+
+	if ( $error_id ) {
+		$not_in[] = $error_id;
+	}
+
+	if ( $not_in ) {
 		$query->set( 'post__not_in', $not_in );
 	}
 }
@@ -136,3 +144,36 @@ function fluidampr_footer_page_robots( $robots ) {
 	return $robots;
 }
 add_filter( 'wp_robots', 'fluidampr_footer_page_robots' );
+
+/**
+ * Keep compact finder GET params from turning /find-your-damper/ into a date archive 404.
+ *
+ * WordPress reserves `year` as a public query var. A GET submit of `?year=2020`
+ * is parsed as a year archive, which has no posts and 404s.
+ *
+ * @param array<string, mixed> $vars Parsed request vars.
+ * @return array<string, mixed>
+ */
+function fluidampr_protect_finder_request( $vars ) {
+	$finder_keys = array( 'year', 'make', 'model', 'submodel', 'engine', 'part', 'fy_year', 'fy_make', 'fy_model', 'fy_submodel', 'fy_engine', 'fy_part' );
+	$has_finder  = false;
+
+	foreach ( $finder_keys as $key ) {
+		if ( isset( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$has_finder = true;
+			break;
+		}
+	}
+
+	if ( ! $has_finder ) {
+		return $vars;
+	}
+
+	if ( ! empty( $vars['pagename'] ) || ! empty( $vars['page_id'] ) || ( ! empty( $vars['name'] ) && empty( $vars['post_type'] ) ) ) {
+		unset( $vars['year'], $vars['monthnum'], $vars['day'], $vars['w'], $vars['m'] );
+		$vars['error'] = '';
+	}
+
+	return $vars;
+}
+add_filter( 'request', 'fluidampr_protect_finder_request' );
