@@ -27,6 +27,8 @@ function fluidampr_register_shortcodes() {
 	add_shortcode( 'fluid_home_hero', 'fluidampr_shortcode_home_hero' );
 	add_shortcode( 'fluid_card_grid', 'fluidampr_shortcode_card_grid' );
 	add_shortcode( 'fluid_community_grid', 'fluidampr_shortcode_community_grid' );
+	add_shortcode( 'fluid_instagram_feed', 'fluidampr_shortcode_instagram_feed' );
+	add_shortcode( 'fluid_site_footer', 'fluidampr_shortcode_site_footer' );
 	add_shortcode( 'fluid_heading_group', 'fluidampr_shortcode_heading_group' );
 }
 add_action( 'init', 'fluidampr_register_shortcodes' );
@@ -328,6 +330,48 @@ function fluidampr_shortcode_card_grid( $atts, $content = null ) {
 function fluidampr_shortcode_community_grid( $atts, $content = null ) {
 	unset( $atts );
 	return '<div class="fluid-community-grid">' . do_shortcode( $content ) . '</div>';
+}
+
+/**
+ * Instagram feed used in the "Real builders" homepage region.
+ *
+ * @param array<string, string> $atts Shortcode attributes.
+ * @param string|null           $content Optional nested feed shortcode.
+ * @return string
+ */
+function fluidampr_shortcode_instagram_feed( $atts, $content = null ) {
+	$atts = shortcode_atts(
+		array(
+			'shortcode' => '',
+		),
+		$atts,
+		'fluid_instagram_feed'
+	);
+
+	$feed_shortcode = trim( (string) $atts['shortcode'] );
+
+	if ( $content ) {
+		$nested = trim( do_shortcode( $content ) );
+
+		if ( '' !== $nested ) {
+			$feed_shortcode = $content;
+		}
+	}
+
+	ob_start();
+	include FLUIDAMPR_THEME_PATH . '/template-parts/instagram-feed.php';
+	return (string) ob_get_clean();
+}
+
+/**
+ * Full site footer for the Enfold footer page.
+ *
+ * @return string
+ */
+function fluidampr_shortcode_site_footer() {
+	ob_start();
+	get_template_part( 'template-parts/footer' );
+	return (string) ob_get_clean();
 }
 
 /**

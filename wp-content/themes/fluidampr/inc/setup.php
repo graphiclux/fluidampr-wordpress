@@ -54,13 +54,15 @@ function fluidampr_default_options() {
 		'email'            => 'info@fluidampr.com',
 		'address'          => "11980 Walden Ave\nSpringville, NY 14141",
 		'facebook'         => 'https://www.facebook.com/Fluidampr',
-		'instagram'        => 'https://www.instagram.com/fluidampr/',
+		'instagram'        => 'https://www.instagram.com/theoriginalfluidampr/',
 		'youtube'          => 'https://www.youtube.com/user/Fluidampr',
 		'linkedin'         => '',
 		'finder_page'      => '/find-your-damper/',
 		'buy_page'         => '/where-to-buy/',
 		'catalog_page'     => '/products/',
-		'newsletter_note'  => __( 'Product updates, tech tips, and new applications.', 'fluidampr' ),
+		'newsletter_note'           => __( 'Product updates, tech tips, and new applications.', 'fluidampr' ),
+		'instagram_access_token'    => '',
+		'instagram_feed_shortcode'  => '',
 	);
 }
 

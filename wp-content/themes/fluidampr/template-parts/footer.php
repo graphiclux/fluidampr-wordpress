@@ -1,6 +1,6 @@
 <?php
 /**
- * Site footer matching the Figma layout.
+ * Site footer markup. Rendered by the Enfold footer page via [fluid_site_footer].
  *
  * @package Fluidampr
  */
@@ -14,10 +14,10 @@ $email   = fluidampr_get_option( 'email' );
 $address = fluidampr_get_option( 'address' );
 $year    = gmdate( 'Y' );
 ?>
-<footer class="fluid-footer" id="fluid-site-footer">
+<div class="fluid-footer">
 	<div class="fluid-footer__grid">
 		<div class="fluid-footer__brand">
-			<a class="fluid-header__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
+			<a class="fluid-footer__logo" href="<?php echo esc_url( home_url( '/' ) ); ?>">
 				<img src="<?php echo esc_url( fluidampr_logo_url() ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" width="180" height="50">
 			</a>
 			<?php if ( $address ) : ?>
@@ -40,7 +40,7 @@ $year    = gmdate( 'Y' );
 		</div>
 
 		<div class="fluid-footer__col">
-			<h2 class="fluid-footer__heading"><?php esc_html_e( 'Products', 'fluidampr' ); ?></h2>
+			<p class="fluid-footer__heading"><?php esc_html_e( 'Products', 'fluidampr' ); ?></p>
 			<?php
 			if ( has_nav_menu( 'fluidampr_footer_1' ) ) {
 				wp_nav_menu(
@@ -62,7 +62,7 @@ $year    = gmdate( 'Y' );
 		</div>
 
 		<div class="fluid-footer__col">
-			<h2 class="fluid-footer__heading"><?php esc_html_e( 'Technology', 'fluidampr' ); ?></h2>
+			<p class="fluid-footer__heading"><?php esc_html_e( 'Technology', 'fluidampr' ); ?></p>
 			<?php
 			if ( has_nav_menu( 'fluidampr_footer_2' ) ) {
 				wp_nav_menu(
@@ -84,15 +84,17 @@ $year    = gmdate( 'Y' );
 		</div>
 
 		<div class="fluid-footer__newsletter">
-			<h2 class="fluid-footer__heading"><?php esc_html_e( 'Newsletter', 'fluidampr' ); ?></h2>
-			<p><?php echo esc_html( fluidampr_get_option( 'newsletter_note' ) ); ?></p>
-			<form class="fluid-footer__form" method="post" action="<?php echo esc_url( home_url( '/contact/' ) ); ?>">
+			<p class="fluid-footer__heading"><?php esc_html_e( 'Newsletter', 'fluidampr' ); ?></p>
+			<p class="fluid-footer__note"><?php echo esc_html( fluidampr_get_option( 'newsletter_note' ) ); ?></p>
+			<form class="fluid-footer__form" data-fluid-newsletter method="post" action="<?php echo esc_url( rest_url( 'fluidampr/v1/newsletter' ) ); ?>" novalidate>
 				<label class="screen-reader-text" for="fluid-newsletter-email"><?php esc_html_e( 'Email address', 'fluidampr' ); ?></label>
-				<input id="fluid-newsletter-email" type="email" name="newsletter_email" required placeholder="<?php esc_attr_e( 'Email address', 'fluidampr' ); ?>" autocomplete="email">
+				<input class="fluid-hp" type="text" name="company" value="" tabindex="-1" autocomplete="off" aria-hidden="true">
+				<input id="fluid-newsletter-email" type="email" name="email" required placeholder="<?php esc_attr_e( 'Email address', 'fluidampr' ); ?>" autocomplete="email">
 				<button type="submit" class="fluid-button"><?php esc_html_e( 'Sign Up', 'fluidampr' ); ?></button>
+				<p class="fluid-footer__form-status" role="status" hidden></p>
 			</form>
 			<div class="fluid-footer__usa">
-				<img src="<?php echo esc_url( FLUIDAMPR_THEME_URI . '/assets/images/made-in-usa.png' ); ?>" alt="<?php esc_attr_e( 'Made in the USA', 'fluidampr' ); ?>" width="60" height="45" loading="lazy" decoding="async">
+				<img src="<?php echo esc_url( FLUIDAMPR_THEME_URI . '/assets/images/made-in-usa.png' ); ?>" alt="<?php esc_attr_e( 'Made in the USA', 'fluidampr' ); ?>" width="72" height="54" loading="lazy" decoding="async">
 				<span><?php esc_html_e( 'Made in the USA', 'fluidampr' ); ?></span>
 			</div>
 		</div>
@@ -133,4 +135,4 @@ $year    = gmdate( 'Y' );
 			<?php endforeach; ?>
 		</ul>
 	</div>
-</footer>
+</div>

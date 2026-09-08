@@ -19,8 +19,11 @@ $fluidampr_modules = array(
 	'inc/performance.php',
 	'inc/enfold-cleanup.php',
 	'inc/theme-options.php',
+	'inc/instagram.php',
+	'inc/constant-contact.php',
 	'inc/header-footer.php',
 	'inc/shortcodes.php',
+	'inc/alb-content.php',
 	'inc/layout-seed.php',
 );
 

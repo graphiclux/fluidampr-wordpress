@@ -211,5 +211,74 @@
 				bindCompactFinder(root);
 			}
 		});
+
+		qsa('[data-fluid-newsletter]').forEach(bindNewsletterForm);
 	});
+
+	function bindNewsletterForm(form) {
+		var status = qs('.fluid-footer__form-status', form);
+		var button = qs('button[type="submit"]', form);
+		var endpoint = settings.newsletterRest || form.getAttribute('action');
+
+		form.addEventListener('submit', function (event) {
+			event.preventDefault();
+
+			if (!endpoint) {
+				return;
+			}
+
+			var email = qs('input[type="email"]', form);
+			var company = qs('input[name="company"]', form);
+
+			if (status) {
+				status.hidden = false;
+				status.className = 'fluid-footer__form-status';
+				status.textContent = settings.i18n.newsletterSending || 'Signing up…';
+			}
+
+			if (button) {
+				button.disabled = true;
+			}
+
+			fetch(endpoint, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: {
+					'Content-Type': 'application/json',
+					'X-WP-Nonce': settings.restNonce || ''
+				},
+				body: JSON.stringify({
+					email: email ? email.value : '',
+					company: company ? company.value : ''
+				})
+			}).then(function (res) {
+				return res.json().then(function (payload) {
+					return { ok: res.ok && payload && payload.success, payload: payload };
+				});
+			}).then(function (result) {
+				var message = (result.payload && result.payload.message) || settings.i18n.newsletterError;
+
+				if (status) {
+					status.className = 'fluid-footer__form-status ' + (result.ok ? 'is-success' : 'is-error');
+					status.textContent = message;
+				}
+
+				if (result.ok) {
+					form.classList.add('is-complete');
+					if (email) {
+						email.value = '';
+					}
+				}
+			}).catch(function () {
+				if (status) {
+					status.className = 'fluid-footer__form-status is-error';
+					status.textContent = settings.i18n.newsletterError || 'Could not complete signup. Try again.';
+				}
+			}).then(function () {
+				if (button) {
+					button.disabled = false;
+				}
+			});
+		});
+	}
 })();
