@@ -13,7 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$count = 3;
+$count = isset( $atts['count'] ) ? (int) $atts['count'] : 3;
+$count = max( 1, min( 21, $count ) );
 $items = function_exists( 'fluidampr_instagram_get_items' )
 	? fluidampr_instagram_get_items( $count )
 	: array();
@@ -28,7 +29,7 @@ $handle = function_exists( 'fluidampr_instagram_handle' )
 	? '@' . fluidampr_instagram_handle()
 	: '@theoriginalfluidampr';
 ?>
-<div class="fluid-instagram" aria-label="<?php esc_attr_e( 'Fluidampr on Instagram', 'fluidampr' ); ?>">
+<div class="fluid-instagram fluid-instagram--count-<?php echo esc_attr( (string) $count ); ?>" aria-label="<?php esc_attr_e( 'Fluidampr on Instagram', 'fluidampr' ); ?>">
 	<div class="fluid-instagram__grid">
 		<?php foreach ( $items as $index => $item ) : ?>
 			<?php

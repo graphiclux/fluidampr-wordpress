@@ -417,7 +417,7 @@ function fluidampr_seed_page_definitions() {
 			true,
 			fluidampr_alb_heading( 'Real builders. Real results.', 'The Fluidampr community' )
 			. fluidampr_alb_text( '<p>From daily drivers to race day, see how builders are putting Fluidampr to work. Follow along on Instagram at @theoriginalfluidampr.</p>' )
-			. fluidampr_alb_text( '[fluid_instagram_feed]', 'fluid-instagram-embed' )
+			. fluidampr_alb_text( '[fluid_instagram_feed count="21"]', 'fluid-instagram-embed' )
 			. fluidampr_alb_button( 'Follow @theoriginalfluidampr', $ig )
 		),
 		array( 'custom_class' => 'fluid-section fluid-interior fluid-home-community' )

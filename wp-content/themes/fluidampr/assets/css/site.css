@@ -545,10 +545,9 @@ body.fluid-overlay-open {
 	margin: 1.5rem 0 1.5rem;
 }
 
-.fluid-instagram {
-	width: min(var(--fluid-content), 100%);
-	margin-left: auto;
-	margin-right: auto;
+.fluid-instagram--count-21 .fluid-instagram__grid {
+	margin-top: 2rem;
+	margin-bottom: 2rem;
 }
 
 .fluid-instagram__item {
@@ -1362,7 +1361,7 @@ img.fluid-instagram__media {
 	color: #9b1c1c;
 }
 
-.fluid-footer__form input {
+.fluid-footer__form input[type="email"] {
 	flex: 1;
 	min-width: 0;
 	height: 38px;
@@ -1375,6 +1374,52 @@ img.fluid-instagram__media {
 	line-height: 20px;
 	color: var(--fluid-color-text);
 	background: var(--fluid-color-bg);
+}
+
+.fluid-footer__audience {
+	flex: 1 0 100%;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 14px 18px;
+	margin: 4px 0 0;
+	padding: 0;
+	border: 0;
+}
+
+#top.fluidampr-theme .fluid-footer__audience legend,
+#top.fluidampr-theme .fluid-footer__audience label {
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.25;
+	color: var(--fluid-color-text);
+}
+
+.fluid-footer__audience legend {
+	float: left;
+	width: auto;
+	padding: 0;
+	margin: 0 4px 0 0;
+}
+
+.fluid-footer__audience label {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	cursor: pointer;
+}
+
+.fluid-footer__form input[type="radio"] {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	min-height: 16px;
+	margin: 0;
+	padding: 0;
+	accent-color: var(--fluid-color-primary);
+	border: 0;
+	background: transparent;
 }
 
 .fluid-footer__form input::placeholder {

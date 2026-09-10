@@ -142,6 +142,7 @@ function fluidampr_shortcode_instagram_feed( $atts, $content = null ) {
 	$atts = shortcode_atts(
 		array(
 			'shortcode' => '',
+			'count'     => '3',
 		),
 		$atts,
 		'fluid_instagram_feed'
@@ -175,6 +176,17 @@ function fluidampr_shortcode_newsletter_form() {
 		<input class="fluid-hp" type="text" name="company" value="" tabindex="-1" autocomplete="off" aria-hidden="true">
 		<input id="fluid-newsletter-email" type="email" name="email" required placeholder="<?php esc_attr_e( 'Email address', 'fluidampr' ); ?>" autocomplete="email">
 		<button type="submit" class="fluid-button"><?php esc_html_e( 'Sign Up', 'fluidampr' ); ?></button>
+		<fieldset class="fluid-footer__audience">
+			<legend><?php esc_html_e( 'I am a', 'fluidampr' ); ?></legend>
+			<label>
+				<input type="radio" name="audience" value="customer" checked>
+				<?php esc_html_e( 'Customer', 'fluidampr' ); ?>
+			</label>
+			<label>
+				<input type="radio" name="audience" value="dealer">
+				<?php esc_html_e( 'Dealer', 'fluidampr' ); ?>
+			</label>
+		</fieldset>
 		<p class="fluid-footer__form-status" role="status" hidden></p>
 	</form>
 	<?php

@@ -100,8 +100,9 @@ function fluidampr_enqueue_assets() {
 				'selectModel'      => __( 'Model', 'fluidampr' ),
 				'selectSub'        => __( 'Submodel', 'fluidampr' ),
 				'loading'          => __( 'Loading…', 'fluidampr' ),
-				'newsletterSending' => __( 'Signing up…', 'fluidampr' ),
-				'newsletterError'   => __( 'Could not complete signup. Try again.', 'fluidampr' ),
+				'newsletterSending'  => __( 'Signing up…', 'fluidampr' ),
+				'newsletterError'    => __( 'Could not complete signup. Try again.', 'fluidampr' ),
+				'newsletterAudience' => __( 'Choose Customer or Dealer.', 'fluidampr' ),
 			),
 		)
 	);

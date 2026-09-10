@@ -25,14 +25,16 @@ function fluidampr_cc_option_keys() {
 		'access_token'   => 'fluidampr_cc_access_token',
 		'refresh_token'  => 'fluidampr_cc_refresh_token',
 		'token_expires'  => 'fluidampr_cc_token_expires',
-		'list_id'        => 'fluidampr_cc_list_id',
+		'list_id'          => 'fluidampr_cc_list_id',
+		'list_id_customer' => 'fluidampr_cc_list_id_customer',
+		'list_id_dealer'   => 'fluidampr_cc_list_id_dealer',
 	);
 }
 
 /**
  * Read a Constant Contact setting. wp-config constants win for secrets.
  *
- * @param string $name api_key, client_secret, access_token, refresh_token, token_expires, list_id.
+ * @param string $name api_key, client_secret, access_token, refresh_token, token_expires, list_id, list_id_customer, list_id_dealer.
  * @return string
  */
 function fluidampr_cc_get( $name ) {
@@ -87,14 +89,35 @@ function fluidampr_cc_redirect_uri() {
 }
 
 /**
- * Whether the account is authorized and a list is selected.
+ * Whether the account is authorized and both signup lists are selected.
  *
  * @return bool
  */
 function fluidampr_cc_is_ready() {
 	return '' !== fluidampr_cc_get( 'access_token' )
 		&& '' !== fluidampr_cc_get( 'refresh_token' )
-		&& '' !== fluidampr_cc_get( 'list_id' );
+		&& '' !== fluidampr_cc_list_id_for_audience( 'customer' )
+		&& '' !== fluidampr_cc_list_id_for_audience( 'dealer' );
+}
+
+/**
+ * Constant Contact list ID for a footer audience choice.
+ *
+ * @param string $audience customer or dealer.
+ * @return string
+ */
+function fluidampr_cc_list_id_for_audience( $audience ) {
+	if ( 'dealer' === $audience ) {
+		return fluidampr_cc_get( 'list_id_dealer' );
+	}
+
+	$customer = fluidampr_cc_get( 'list_id_customer' );
+
+	if ( '' !== $customer ) {
+		return $customer;
+	}
+
+	return fluidampr_cc_get( 'list_id' );
 }
 
 /**
@@ -111,11 +134,15 @@ function fluidampr_cc_register_rest() {
 			'callback'            => 'fluidampr_cc_rest_subscribe',
 			'permission_callback' => '__return_true',
 			'args'                => array(
-				'email'   => array(
+				'email'     => array(
 					'required'          => true,
 					'sanitize_callback' => 'sanitize_email',
 				),
-				'company' => array(
+				'audience'  => array(
+					'required'          => true,
+					'sanitize_callback' => 'sanitize_key',
+				),
+				'company'   => array(
 					'required'          => false,
 					'sanitize_callback' => 'sanitize_text_field',
 				),
@@ -144,13 +171,24 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 		);
 	}
 
-	$email = sanitize_email( (string) $request->get_param( 'email' ) );
+	$email    = sanitize_email( (string) $request->get_param( 'email' ) );
+	$audience = sanitize_key( (string) $request->get_param( 'audience' ) );
 
 	if ( ! is_email( $email ) ) {
 		return new WP_REST_Response(
 			array(
 				'success' => false,
 				'message' => __( 'Enter a valid email address.', 'fluidampr' ),
+			),
+			400
+		);
+	}
+
+	if ( ! in_array( $audience, array( 'customer', 'dealer' ), true ) ) {
+		return new WP_REST_Response(
+			array(
+				'success' => false,
+				'message' => __( 'Choose Customer or Dealer.', 'fluidampr' ),
 			),
 			400
 		);
@@ -182,7 +220,19 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 		);
 	}
 
-	$result = fluidampr_cc_sign_up( $email );
+	$list_id = fluidampr_cc_list_id_for_audience( $audience );
+
+	if ( '' === $list_id ) {
+		return new WP_REST_Response(
+			array(
+				'success' => false,
+				'message' => __( 'Newsletter signup is temporarily unavailable.', 'fluidampr' ),
+			),
+			503
+		);
+	}
+
+	$result = fluidampr_cc_sign_up( $email, $list_id );
 
 	if ( is_wp_error( $result ) ) {
 		return new WP_REST_Response(
@@ -206,10 +256,12 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 /**
  * POST /v3/contacts/sign_up_form
  *
- * @param string $email Email address.
+ * @param string $email   Email address.
+ * @param string $list_id Constant Contact list ID.
+ * @param bool   $retried Whether this is a retry after refreshing the token.
  * @return true|WP_Error
  */
-function fluidampr_cc_sign_up( $email, $retried = false ) {
+function fluidampr_cc_sign_up( $email, $list_id, $retried = false ) {
 	$token = fluidampr_cc_valid_access_token();
 
 	if ( is_wp_error( $token ) ) {
@@ -228,7 +280,7 @@ function fluidampr_cc_sign_up( $email, $retried = false ) {
 			'body'    => wp_json_encode(
 				array(
 					'email_address'    => $email,
-					'list_memberships' => array( fluidampr_cc_get( 'list_id' ) ),
+					'list_memberships' => array( $list_id ),
 				)
 			),
 		)
@@ -248,7 +300,7 @@ function fluidampr_cc_sign_up( $email, $retried = false ) {
 		$refreshed = fluidampr_cc_refresh_access_token();
 
 		if ( ! is_wp_error( $refreshed ) ) {
-			return fluidampr_cc_sign_up( $email, true );
+			return fluidampr_cc_sign_up( $email, $list_id, true );
 		}
 	}
 
@@ -430,8 +482,14 @@ function fluidampr_cc_handle_admin() {
 			}
 		}
 
-		if ( isset( $_POST['fluidampr_cc_list_id'] ) ) {
-			fluidampr_cc_set( 'list_id', sanitize_text_field( wp_unslash( $_POST['fluidampr_cc_list_id'] ) ) );
+		if ( isset( $_POST['fluidampr_cc_list_id_customer'] ) ) {
+			$customer_list = sanitize_text_field( wp_unslash( $_POST['fluidampr_cc_list_id_customer'] ) );
+			fluidampr_cc_set( 'list_id_customer', $customer_list );
+			fluidampr_cc_set( 'list_id', $customer_list );
+		}
+
+		if ( isset( $_POST['fluidampr_cc_list_id_dealer'] ) ) {
+			fluidampr_cc_set( 'list_id_dealer', sanitize_text_field( wp_unslash( $_POST['fluidampr_cc_list_id_dealer'] ) ) );
 		}
 
 		wp_safe_redirect( add_query_arg( 'cc_saved', '1', fluidampr_cc_redirect_uri() ) );
@@ -439,7 +497,7 @@ function fluidampr_cc_handle_admin() {
 	}
 
 	if ( isset( $_POST['fluidampr_cc_disconnect'] ) && check_admin_referer( 'fluidampr_cc_settings' ) ) {
-		foreach ( array( 'access_token', 'refresh_token', 'token_expires', 'list_id' ) as $key ) {
+		foreach ( array( 'access_token', 'refresh_token', 'token_expires', 'list_id', 'list_id_customer', 'list_id_dealer' ) as $key ) {
 			fluidampr_cc_set( $key, '' );
 		}
 
@@ -538,10 +596,11 @@ function fluidampr_cc_handle_oauth_callback() {
 function fluidampr_render_constant_contact_settings() {
 	$connected = '' !== fluidampr_cc_get( 'access_token' );
 	$lists     = $connected ? fluidampr_cc_get_lists() : array();
-	$current   = fluidampr_cc_get( 'list_id' );
+	$customer  = fluidampr_cc_list_id_for_audience( 'customer' );
+	$dealer    = fluidampr_cc_list_id_for_audience( 'dealer' );
 
 	if ( isset( $_GET['cc_connected'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		echo '<div class="notice notice-success"><p>' . esc_html__( 'Constant Contact is connected. Choose the list new signups should join, then save.', 'fluidampr' ) . '</p></div>';
+		echo '<div class="notice notice-success"><p>' . esc_html__( 'Constant Contact is connected. Map Customer and Dealer to their lists, then save.', 'fluidampr' ) . '</p></div>';
 	}
 
 	if ( isset( $_GET['cc_saved'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -558,7 +617,7 @@ function fluidampr_render_constant_contact_settings() {
 
 	echo '<hr />';
 	echo '<h2>' . esc_html__( 'Constant Contact', 'fluidampr' ) . '</h2>';
-	echo '<p>' . esc_html__( 'The footer Sign Up field adds contacts to a Constant Contact list through the V3 API. Create a private app in the Constant Contact developer portal, paste the API key and secret, add the redirect URI below to the app, then connect the Fluidampr account.', 'fluidampr' ) . '</p>';
+	echo '<p>' . esc_html__( 'The footer Sign Up field adds contacts through the V3 API. Create a private app in the Constant Contact developer portal, paste the API key and secret, add the redirect URI below to the app, then connect the Fluidampr account. Choose which list Customer signups join and which list Dealer signups join.', 'fluidampr' ) . '</p>';
 	echo '<p><code>' . esc_html( fluidampr_cc_redirect_uri() ) . '</code></p>';
 
 	echo '<form method="post">';
@@ -584,27 +643,21 @@ function fluidampr_render_constant_contact_settings() {
 	echo '</td></tr>';
 
 	if ( $connected ) {
-		echo '<tr><th scope="row"><label for="fluidampr_cc_list_id">' . esc_html__( 'Signup list', 'fluidampr' ) . '</label></th><td>';
-
 		if ( is_wp_error( $lists ) ) {
+			echo '<tr><th scope="row">' . esc_html__( 'Signup lists', 'fluidampr' ) . '</th><td>';
 			echo '<p>' . esc_html__( 'Connected, but lists could not be loaded. Reconnect if this continues.', 'fluidampr' ) . '</p>';
+			echo '</td></tr>';
 		} else {
-			echo '<select id="fluidampr_cc_list_id" name="fluidampr_cc_list_id">';
-			echo '<option value="">' . esc_html__( 'Select a list', 'fluidampr' ) . '</option>';
+			echo '<tr><th scope="row"><label for="fluidampr_cc_list_id_customer">' . esc_html__( 'Customer list', 'fluidampr' ) . '</label></th><td>';
+			fluidampr_cc_render_list_select( 'fluidampr_cc_list_id_customer', $customer, $lists );
+			echo '<p class="description">' . esc_html__( 'Used when someone chooses Customer on the footer form.', 'fluidampr' ) . '</p>';
+			echo '</td></tr>';
 
-			foreach ( $lists as $list ) {
-				printf(
-					'<option value="%s"%s>%s</option>',
-					esc_attr( $list['id'] ),
-					selected( $current, $list['id'], false ),
-					esc_html( $list['name'] )
-				);
-			}
-
-			echo '</select>';
+			echo '<tr><th scope="row"><label for="fluidampr_cc_list_id_dealer">' . esc_html__( 'Dealer list', 'fluidampr' ) . '</label></th><td>';
+			fluidampr_cc_render_list_select( 'fluidampr_cc_list_id_dealer', $dealer, $lists );
+			echo '<p class="description">' . esc_html__( 'Used when someone chooses Dealer on the footer form.', 'fluidampr' ) . '</p>';
+			echo '</td></tr>';
 		}
-
-		echo '</td></tr>';
 	}
 
 	echo '</tbody></table>';
@@ -619,4 +672,28 @@ function fluidampr_render_constant_contact_settings() {
 	}
 
 	echo '</form>';
+}
+
+/**
+ * List dropdown for the setup screen.
+ *
+ * @param string                           $name    Select name and id.
+ * @param string                           $current Selected list ID.
+ * @param array<int, array<string, string>> $lists  Lists from the API.
+ * @return void
+ */
+function fluidampr_cc_render_list_select( $name, $current, $lists ) {
+	printf( '<select id="%1$s" name="%1$s">', esc_attr( $name ) );
+	echo '<option value="">' . esc_html__( 'Select a list', 'fluidampr' ) . '</option>';
+
+	foreach ( $lists as $list ) {
+		printf(
+			'<option value="%s"%s>%s</option>',
+			esc_attr( $list['id'] ),
+			selected( $current, $list['id'], false ),
+			esc_html( $list['name'] )
+		);
+	}
+
+	echo '</select>';
 }

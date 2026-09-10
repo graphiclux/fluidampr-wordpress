@@ -380,6 +380,16 @@
 
 			var email = qs('input[type="email"]', form);
 			var company = qs('input[name="company"]', form);
+			var audience = qs('input[name="audience"]:checked', form);
+
+			if (!audience || !audience.value) {
+				if (status) {
+					status.hidden = false;
+					status.className = 'fluid-footer__form-status is-error';
+					status.textContent = settings.i18n.newsletterAudience || 'Choose Customer or Dealer.';
+				}
+				return;
+			}
 
 			if (status) {
 				status.hidden = false;
@@ -400,6 +410,7 @@
 				},
 				body: JSON.stringify({
 					email: email ? email.value : '',
+					audience: audience.value,
 					company: company ? company.value : ''
 				})
 			}).then(function (res) {
@@ -418,6 +429,11 @@
 					form.classList.add('is-complete');
 					if (email) {
 						email.value = '';
+					}
+
+					var customer = qs('input[name="audience"][value="customer"]', form);
+					if (customer) {
+						customer.checked = true;
 					}
 				}
 			}).catch(function () {
