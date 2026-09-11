@@ -382,6 +382,7 @@ function fluidampr_seed_page_definitions() {
 			true,
 			fluidampr_alb_heading( 'Knowledge center', 'Support' )
 			. fluidampr_alb_text( '<p>Install resources, application notes, and technical articles so you can build with confidence.</p>' )
+			. fluidampr_alb_text( '[fluid_knowledge_base]', 'fluid-kb-embed' )
 		)
 		. fluidampr_alb_col( 'one_fourth', true, fluidampr_alb_iconbox( 'ue836', 'Instructions', 'QR-code-ready instruction URLs by part number.', fluidampr_url( '/instructions/' ), 'View instructions' ) )
 		. fluidampr_alb_col( 'one_fourth', false, fluidampr_alb_iconbox( 'ue8bd', 'Support / FAQ', 'Common fitment and installation questions.', fluidampr_url( '/support/' ), 'Read FAQs' ) )
@@ -443,6 +444,7 @@ function fluidampr_seed_page_definitions() {
 			'one_full',
 			true,
 			fluidampr_alb_heading( 'Support / FAQ', 'Help' )
+			. fluidampr_alb_text( '[fluid_knowledge_base featured="1"]', 'fluid-kb-embed' )
 			. fluidampr_sc( 'av_toggle_container', array( 'styling' => '' ), $faq )
 		),
 		array( 'custom_class' => 'fluid-section fluid-interior' )

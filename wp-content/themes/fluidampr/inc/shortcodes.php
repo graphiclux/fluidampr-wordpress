@@ -22,6 +22,7 @@ function fluidampr_register_shortcodes() {
 	add_shortcode( 'fluid_finder_panel', 'fluidampr_shortcode_finder_panel' );
 	add_shortcode( 'fluid_instagram_feed', 'fluidampr_shortcode_instagram_feed' );
 	add_shortcode( 'fluid_newsletter_form', 'fluidampr_shortcode_newsletter_form' );
+	add_shortcode( 'fluid_knowledge_base', 'fluidampr_kb_shortcode' );
 }
 add_action( 'init', 'fluidampr_register_shortcodes' );
 

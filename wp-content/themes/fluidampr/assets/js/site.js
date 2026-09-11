@@ -260,6 +260,7 @@
 		prefillPluginFinder();
 
 		qsa('[data-fluid-newsletter]').forEach(bindNewsletterForm);
+		qsa('[data-fluid-kb]').forEach(bindKnowledgeBase);
 	});
 
 	function queryParam(name) {
@@ -364,6 +365,129 @@
 				});
 			});
 		});
+	}
+
+	function kbEscape(text) {
+		var div = document.createElement('div');
+		div.textContent = text || '';
+		return div.innerHTML;
+	}
+
+	function kbListHtml(articles) {
+		if (!articles || !articles.length) {
+			return '';
+		}
+
+		return '<ul class="fluid-kb__list">' + articles.map(function (article) {
+			var meta = [];
+			var cats;
+			var html = '<li class="fluid-kb__item"><a class="fluid-kb__link" href="' + kbEscape(article.url || '') + '">' + kbEscape(article.title || '') + '</a>';
+
+			if (article.excerpt) {
+				html += '<p class="fluid-kb__excerpt">' + kbEscape(article.excerpt) + '</p>';
+			}
+
+			if (article.featured) {
+				meta.push('Common question');
+			}
+
+			cats = article.categories || [];
+			cats.forEach(function (category) {
+				if (category && category.name) {
+					meta.push(category.name);
+				}
+			});
+
+			if (article.related_skus && article.related_skus.length) {
+				meta.push(article.related_skus.join(', '));
+			}
+
+			if (meta.length) {
+				html += '<p class="fluid-kb__meta">' + kbEscape(meta.join(' · ')) + '</p>';
+			}
+
+			return html + '</li>';
+		}).join('') + '</ul>';
+	}
+
+	function bindKnowledgeBase(root) {
+		var form = qs('[data-fluid-kb-form]', root);
+		var input = qs('[data-fluid-kb-q]', root);
+		var category = qs('[data-fluid-kb-category]', root);
+		var status = qs('[data-fluid-kb-status]', root);
+		var results = qs('[data-fluid-kb-results]', root);
+		var restUrl = settings.knowledgeBaseRest || '';
+
+		if (!form || !restUrl) {
+			return;
+		}
+
+		function search(event) {
+			if (event) {
+				event.preventDefault();
+			}
+
+			var params = new URLSearchParams();
+			var q = input ? input.value.trim() : '';
+			var topic = category ? category.value : (root.getAttribute('data-category') || '');
+
+			if (q) {
+				params.set('q', q);
+			}
+
+			if (topic) {
+				params.set('category', topic);
+			}
+
+			if (root.getAttribute('data-featured') === '1') {
+				params.set('featured', '1');
+			}
+
+			if (status) {
+				status.textContent = settings.i18n.kbLoading || 'Searching…';
+			}
+
+			fetch(restUrl + (params.toString() ? '?' + params.toString() : ''), {
+				credentials: 'same-origin',
+				headers: { Accept: 'application/json' }
+			}).then(function (res) {
+				return res.json();
+			}).then(function (payload) {
+				var articles = payload && payload.data && payload.data.results ? payload.data.results : [];
+
+				if (status) {
+					status.textContent = articles.length ? '' : (payload && payload.message) || settings.i18n.kbEmpty || 'No matching articles were found.';
+				}
+
+				if (results) {
+					results.innerHTML = articles.length ? kbListHtml(articles) : '';
+				}
+			}).catch(function () {
+				if (status) {
+					status.textContent = settings.i18n.kbError || 'Could not search articles. Try again.';
+				}
+			});
+		}
+
+		form.addEventListener('submit', search);
+
+		if (category) {
+			category.addEventListener('change', search);
+		}
+
+		if (input) {
+			['q', 'sku', 'part_number', 'pn'].some(function (key) {
+				var value = queryParam(key);
+
+				if (value) {
+					input.value = value;
+					search();
+					return true;
+				}
+
+				return false;
+			});
+		}
 	}
 
 	function bindNewsletterForm(form) {

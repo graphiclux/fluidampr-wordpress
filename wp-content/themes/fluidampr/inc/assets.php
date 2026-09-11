@@ -90,6 +90,7 @@ function fluidampr_enqueue_assets() {
 			'finderPage'     => home_url( fluidampr_get_option( 'finder_page' ) ),
 			'catalogPage'    => home_url( fluidampr_get_option( 'catalog_page' ) ),
 			'newsletterRest'      => esc_url_raw( rest_url( 'fluidampr/v1/newsletter' ) ),
+			'knowledgeBaseRest'   => esc_url_raw( rest_url( 'fluidampr/v1/knowledge-base' ) ),
 			'turnstileEnabled'    => function_exists( 'fluidampr_turnstile_is_enabled' ) && fluidampr_turnstile_is_enabled(),
 			'restNonce'           => wp_create_nonce( 'wp_rest' ),
 			'i18n'                => array(
@@ -105,6 +106,9 @@ function fluidampr_enqueue_assets() {
 				'newsletterError'     => __( 'Could not complete signup. Try again.', 'fluidampr' ),
 				'newsletterAudience'  => __( 'Choose Customer or Dealer.', 'fluidampr' ),
 				'newsletterTurnstile' => __( 'Please complete the security check and try again.', 'fluidampr' ),
+				'kbLoading'           => __( 'Searching…', 'fluidampr' ),
+				'kbError'             => __( 'Could not search articles. Try again.', 'fluidampr' ),
+				'kbEmpty'             => __( 'No matching articles were found.', 'fluidampr' ),
 			),
 		)
 	);

@@ -25,6 +25,7 @@ $fluidampr_modules = array(
 	'inc/constant-contact.php',
 	'inc/header-footer.php',
 	'inc/shortcodes.php',
+	'inc/knowledge-base.php',
 	'inc/alb-content.php',
 	'inc/layout-seed.php',
 );
