@@ -428,8 +428,8 @@ function fluidampr_seed_page_definitions() {
 			'one_full',
 			true,
 			fluidampr_alb_heading( 'Instructions', 'Install' )
-			. fluidampr_alb_text( '<p>Look up installation instructions by part number. QR-code URLs can point at these same routes later.</p>' )
-			. fluidampr_alb_text( '[fluid_finder_panel mode="compact"]', 'fluid-finder-embed' )
+			. fluidampr_alb_text( '<p>Look up installation instructions by Fluidampr part number or product name. Existing QR codes can keep using /instructions/?part_number=SKU.</p>' )
+			. fluidampr_alb_text( '[fluidampr_instructions_lookup]', 'fluid-instructions-embed' )
 		),
 		array( 'custom_class' => 'fluid-section fluid-interior' )
 	);
