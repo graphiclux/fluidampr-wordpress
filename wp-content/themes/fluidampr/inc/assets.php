@@ -33,6 +33,15 @@ function fluidampr_asset_version( $relative ) {
 function fluidampr_enqueue_assets() {
 	$css_rel = 'assets/css/site.css';
 	$js_rel  = 'assets/js/site.js';
+	$deps    = array( 'fluidampr-style' );
+
+	if ( is_singular() ) {
+		$post_css = 'avia-single-post-' . get_queried_object_id();
+
+		if ( wp_style_is( $post_css, 'registered' ) || wp_style_is( $post_css, 'enqueued' ) ) {
+			$deps[] = $post_css;
+		}
+	}
 
 	wp_enqueue_style(
 		'fluidampr-style',
@@ -44,14 +53,22 @@ function fluidampr_enqueue_assets() {
 	wp_enqueue_style(
 		'fluidampr-site',
 		FLUIDAMPR_THEME_URI . '/' . $css_rel,
-		array( 'fluidampr-style' ),
+		$deps,
 		fluidampr_asset_version( $css_rel )
 	);
+
+	fluidampr_ensure_sema_finder_assets();
+
+	$js_deps = array();
+
+	if ( wp_script_is( 'fluidampr-finder', 'enqueued' ) ) {
+		$js_deps[] = 'fluidampr-finder';
+	}
 
 	wp_enqueue_script(
 		'fluidampr-site',
 		FLUIDAMPR_THEME_URI . '/' . $js_rel,
-		array(),
+		$js_deps,
 		fluidampr_asset_version( $js_rel ),
 		array(
 			'in_footer' => true,
@@ -69,23 +86,100 @@ function fluidampr_enqueue_assets() {
 		'fluidampr-site',
 		'fluidamprTheme',
 		array(
-			'finderRest'  => $finder_rest,
-			'finderPage'  => home_url( fluidampr_get_option( 'finder_page' ) ),
-			'catalogPage' => home_url( fluidampr_get_option( 'catalog_page' ) ),
-			'i18n'        => array(
-				'searchLabel'  => __( 'Search the site', 'fluidampr' ),
-				'menuLabel'    => __( 'Open menu', 'fluidampr' ),
-				'closeLabel'   => __( 'Close', 'fluidampr' ),
-				'selectYear'   => __( 'Year', 'fluidampr' ),
-				'selectMake'   => __( 'Make', 'fluidampr' ),
-				'selectModel'  => __( 'Model', 'fluidampr' ),
-				'selectSub'    => __( 'Submodel', 'fluidampr' ),
-				'loading'      => __( 'Loading…', 'fluidampr' ),
+			'finderRest'     => $finder_rest,
+			'finderPage'     => home_url( fluidampr_get_option( 'finder_page' ) ),
+			'catalogPage'    => home_url( fluidampr_get_option( 'catalog_page' ) ),
+			'newsletterRest'      => esc_url_raw( rest_url( 'fluidampr/v1/newsletter' ) ),
+			'knowledgeBaseRest'   => esc_url_raw( rest_url( 'fluidampr/v1/knowledge-base' ) ),
+			'turnstileEnabled'    => function_exists( 'fluidampr_turnstile_is_enabled' ) && fluidampr_turnstile_is_enabled(),
+			'restNonce'           => wp_create_nonce( 'wp_rest' ),
+			'i18n'                => array(
+				'searchLabel'         => __( 'Search the site', 'fluidampr' ),
+				'menuLabel'           => __( 'Open menu', 'fluidampr' ),
+				'closeLabel'          => __( 'Close', 'fluidampr' ),
+				'selectYear'          => __( 'Year', 'fluidampr' ),
+				'selectMake'          => __( 'Make', 'fluidampr' ),
+				'selectModel'         => __( 'Model', 'fluidampr' ),
+				'selectSub'           => __( 'Submodel', 'fluidampr' ),
+				'loading'             => __( 'Loading…', 'fluidampr' ),
+				'newsletterSending'   => __( 'Signing up…', 'fluidampr' ),
+				'newsletterError'     => __( 'Could not complete signup. Try again.', 'fluidampr' ),
+				'newsletterAudience'  => __( 'Choose Customer or Dealer.', 'fluidampr' ),
+				'newsletterTurnstile' => __( 'Please complete the security check and try again.', 'fluidampr' ),
+				'kbLoading'           => __( 'Searching…', 'fluidampr' ),
+				'kbError'             => __( 'Could not search articles. Try again.', 'fluidampr' ),
+				'kbEmpty'             => __( 'No matching articles were found.', 'fluidampr' ),
 			),
 		)
 	);
 }
-add_action( 'wp_enqueue_scripts', 'fluidampr_enqueue_assets', 30 );
+add_action( 'wp_enqueue_scripts', 'fluidampr_enqueue_assets', 1000002 );
+
+/**
+ * Load the SEMA finder script when the theme nests [fluidampr_finder]
+ * inside [fluid_finder_panel]. The plugin only auto-enqueues when that
+ * tag is in post_content, which Enfold ALB pages do not store.
+ *
+ * @return void
+ */
+function fluidampr_ensure_sema_finder_assets() {
+	if ( ! defined( 'FLUIDAMPR_SEMA_INTEGRATION_URL' ) || ! is_singular() ) {
+		return;
+	}
+
+	$post = get_queried_object();
+
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	$blob = (string) $post->post_content . (string) get_post_meta( $post->ID, '_aviaLayoutBuilderCleanData', true );
+
+	if ( false === strpos( $blob, 'fluid_finder_panel' ) && false === strpos( $blob, 'fluidampr_finder' ) ) {
+		return;
+	}
+
+	$handle = 'fluidampr-finder';
+	$ver    = defined( 'FLUIDAMPR_SEMA_INTEGRATION_VERSION' ) ? FLUIDAMPR_SEMA_INTEGRATION_VERSION : FLUIDAMPR_THEME_VERSION;
+
+	wp_enqueue_style(
+		$handle,
+		FLUIDAMPR_SEMA_INTEGRATION_URL . 'assets/finder.css',
+		array(),
+		$ver
+	);
+
+	wp_enqueue_script(
+		$handle,
+		FLUIDAMPR_SEMA_INTEGRATION_URL . 'assets/finder.js',
+		array(),
+		$ver,
+		true
+	);
+
+	if ( ! wp_script_is( $handle, 'enqueued' ) ) {
+		return;
+	}
+
+	$localized = wp_scripts()->get_data( $handle, 'data' );
+
+	if ( $localized ) {
+		return;
+	}
+
+	$hide_prices = class_exists( '\Fluidampr\SemaIntegration\Catalog\CatalogModeSettings' )
+		&& \Fluidampr\SemaIntegration\Catalog\CatalogModeSettings::hide_prices();
+
+	wp_localize_script(
+		$handle,
+		'fluidamprFinderSettings',
+		array(
+			'restUrl'    => esc_url_raw( rest_url( 'fluidampr-sema/v1/' ) ),
+			'hidePrices' => $hide_prices ? '1' : '0',
+			'i18n'       => array(),
+		)
+	);
+}
 
 /**
  * Preload the latin heading/body font and logo for a faster first paint.
@@ -93,7 +187,7 @@ add_action( 'wp_enqueue_scripts', 'fluidampr_enqueue_assets', 30 );
  * @return void
  */
 function fluidampr_resource_hints() {
-	$font = FLUIDAMPR_THEME_URI . '/assets/fonts/plus-jakarta-sans-latin.woff2';
+	$font = FLUIDAMPR_THEME_URI . '/assets/fonts/titillium-web-700italic-latin.woff2';
 
 	printf(
 		"<link rel='preload' href='%s' as='font' type='font/woff2' crossorigin>\n",

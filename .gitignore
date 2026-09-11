@@ -1,0 +1,6 @@
+#ddev-generated: Automatically generated ddev .gitignore.
+# You can remove the above line if you want to edit and maintain this file yourself.
+/wp-config-ddev.php
+/drushrc.php
+/wp-content/db.php
+/wp-content/index.php
