@@ -21,6 +21,7 @@ $fluidampr_modules = array(
 	'inc/admin.php',
 	'inc/theme-options.php',
 	'inc/instagram.php',
+	'inc/turnstile.php',
 	'inc/constant-contact.php',
 	'inc/header-footer.php',
 	'inc/shortcodes.php',

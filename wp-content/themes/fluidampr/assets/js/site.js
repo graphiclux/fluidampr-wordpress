@@ -381,12 +381,23 @@
 			var email = qs('input[type="email"]', form);
 			var company = qs('input[name="company"]', form);
 			var audience = qs('input[name="audience"]:checked', form);
+			var turnstileInput = qs('input[name="cf-turnstile-response"]', form);
+			var turnstileToken = turnstileInput ? turnstileInput.value : '';
 
 			if (!audience || !audience.value) {
 				if (status) {
 					status.hidden = false;
 					status.className = 'fluid-footer__form-status is-error';
 					status.textContent = settings.i18n.newsletterAudience || 'Choose Customer or Dealer.';
+				}
+				return;
+			}
+
+			if (settings.turnstileEnabled && !turnstileToken) {
+				if (status) {
+					status.hidden = false;
+					status.className = 'fluid-footer__form-status is-error';
+					status.textContent = settings.i18n.newsletterTurnstile || 'Please complete the security check and try again.';
 				}
 				return;
 			}
@@ -411,7 +422,8 @@
 				body: JSON.stringify({
 					email: email ? email.value : '',
 					audience: audience.value,
-					company: company ? company.value : ''
+					company: company ? company.value : '',
+					turnstile_token: turnstileToken
 				})
 			}).then(function (res) {
 				return res.json().then(function (payload) {
@@ -444,6 +456,15 @@
 			}).then(function () {
 				if (button) {
 					button.disabled = false;
+				}
+
+				if (window.turnstile && typeof window.turnstile.reset === 'function') {
+					var widget = qs('.cf-turnstile', form);
+					if (widget) {
+						window.turnstile.reset(widget);
+					} else {
+						window.turnstile.reset();
+					}
 				}
 			});
 		});

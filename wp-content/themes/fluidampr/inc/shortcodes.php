@@ -176,6 +176,7 @@ function fluidampr_shortcode_newsletter_form() {
 		<input class="fluid-hp" type="text" name="company" value="" tabindex="-1" autocomplete="off" aria-hidden="true">
 		<input id="fluid-newsletter-email" type="email" name="email" required placeholder="<?php esc_attr_e( 'Email address', 'fluidampr' ); ?>" autocomplete="email">
 		<button type="submit" class="fluid-button"><?php esc_html_e( 'Sign Up', 'fluidampr' ); ?></button>
+		<?php echo function_exists( 'fluidampr_turnstile_widget_html' ) ? fluidampr_turnstile_widget_html() : ''; ?>
 		<fieldset class="fluid-footer__audience">
 			<legend><?php esc_html_e( 'I am a', 'fluidampr' ); ?></legend>
 			<label>

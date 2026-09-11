@@ -1347,6 +1347,12 @@ img.fluid-instagram__media {
 	opacity: 0;
 }
 
+.fluid-footer__form .fluid-turnstile,
+.fluid-footer__form .cf-turnstile {
+	flex: 1 0 100%;
+	margin: 4px 0 0;
+}
+
 .fluid-footer__form-status {
 	flex: 1 0 100%;
 	margin: 0.15rem 0 0;

@@ -134,15 +134,19 @@ function fluidampr_cc_register_rest() {
 			'callback'            => 'fluidampr_cc_rest_subscribe',
 			'permission_callback' => '__return_true',
 			'args'                => array(
-				'email'     => array(
+				'email'            => array(
 					'required'          => true,
 					'sanitize_callback' => 'sanitize_email',
 				),
-				'audience'  => array(
+				'audience'         => array(
 					'required'          => true,
 					'sanitize_callback' => 'sanitize_key',
 				),
-				'company'   => array(
+				'company'          => array(
+					'required'          => false,
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+				'turnstile_token'  => array(
 					'required'          => false,
 					'sanitize_callback' => 'sanitize_text_field',
 				),
@@ -162,6 +166,8 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 	$honeypot = trim( (string) $request->get_param( 'company' ) );
 
 	if ( '' !== $honeypot ) {
+		fluidampr_cc_log( 'honeypot' );
+
 		return new WP_REST_Response(
 			array(
 				'success' => true,
@@ -171,10 +177,26 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 		);
 	}
 
+	if ( fluidampr_cc_is_rate_limited() ) {
+		fluidampr_cc_log( 'rate_limited' );
+
+		return new WP_REST_Response(
+			array(
+				'success' => false,
+				'message' => __( 'Too many attempts. Try again later.', 'fluidampr' ),
+			),
+			429
+		);
+	}
+
+	fluidampr_cc_hit_rate_limit();
+
 	$email    = sanitize_email( (string) $request->get_param( 'email' ) );
 	$audience = sanitize_key( (string) $request->get_param( 'audience' ) );
 
-	if ( ! is_email( $email ) ) {
+	if ( '' === $email || strlen( $email ) > 254 || ! is_email( $email ) ) {
+		fluidampr_cc_log( 'invalid_email' );
+
 		return new WP_REST_Response(
 			array(
 				'success' => false,
@@ -185,6 +207,8 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 	}
 
 	if ( ! in_array( $audience, array( 'customer', 'dealer' ), true ) ) {
+		fluidampr_cc_log( 'invalid_audience' );
+
 		return new WP_REST_Response(
 			array(
 				'success' => false,
@@ -194,23 +218,33 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 		);
 	}
 
-	$ip    = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : 'unknown';
-	$limit = 'fluidampr_cc_rl_' . md5( $ip );
-	$hits  = (int) get_transient( $limit );
+	if ( function_exists( 'fluidampr_turnstile_is_enabled' ) && fluidampr_turnstile_is_enabled() ) {
+		$token   = (string) $request->get_param( 'turnstile_token' );
+		$verified = fluidampr_turnstile_verify( $token, fluidampr_cc_client_ip() );
 
-	if ( $hits >= 8 ) {
-		return new WP_REST_Response(
-			array(
-				'success' => false,
-				'message' => __( 'Too many attempts. Try again later.', 'fluidampr' ),
-			),
-			429
-		);
+		if ( is_wp_error( $verified ) ) {
+			$reason = 'fluidampr_turnstile' === $verified->get_error_code()
+				? (string) $verified->get_error_message()
+				: 'verify_unavailable';
+			fluidampr_cc_log( 'turnstile_' . $reason );
+
+			$message = 'verify_unavailable' === $reason
+				? __( 'Could not verify the security check. Try again in a moment.', 'fluidampr' )
+				: __( 'Please complete the security check and try again.', 'fluidampr' );
+
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => $message,
+				),
+				403
+			);
+		}
 	}
 
-	set_transient( $limit, $hits + 1, HOUR_IN_SECONDS );
-
 	if ( ! fluidampr_cc_is_ready() ) {
+		fluidampr_cc_log( 'not_ready' );
+
 		return new WP_REST_Response(
 			array(
 				'success' => false,
@@ -223,6 +257,8 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 	$list_id = fluidampr_cc_list_id_for_audience( $audience );
 
 	if ( '' === $list_id ) {
+		fluidampr_cc_log( 'missing_list' );
+
 		return new WP_REST_Response(
 			array(
 				'success' => false,
@@ -235,6 +271,8 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 	$result = fluidampr_cc_sign_up( $email, $list_id );
 
 	if ( is_wp_error( $result ) ) {
+		fluidampr_cc_log( 'signup_rejected' );
+
 		return new WP_REST_Response(
 			array(
 				'success' => false,
@@ -244,6 +282,8 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 		);
 	}
 
+	fluidampr_cc_log( 'signup_ok' );
+
 	return new WP_REST_Response(
 		array(
 			'success' => true,
@@ -251,6 +291,74 @@ function fluidampr_cc_rest_subscribe( WP_REST_Request $request ) {
 		),
 		200
 	);
+}
+
+/**
+ * Client IP for rate limiting and Turnstile (never logged raw).
+ *
+ * @return string
+ */
+function fluidampr_cc_client_ip() {
+	if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+		$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+
+		if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+			return $ip;
+		}
+	}
+
+	return 'unknown';
+}
+
+/**
+ * Transient key for the current IP’s signup attempts.
+ *
+ * @return string
+ */
+function fluidampr_cc_rate_limit_key() {
+	return 'fluidampr_cc_rl_' . md5( fluidampr_cc_client_ip() );
+}
+
+/**
+ * Whether this IP has exceeded 8 signup attempts in an hour.
+ *
+ * @return bool
+ */
+function fluidampr_cc_is_rate_limited() {
+	return (int) get_transient( fluidampr_cc_rate_limit_key() ) >= 8;
+}
+
+/**
+ * Count this request against the hourly IP cap.
+ *
+ * @return void
+ */
+function fluidampr_cc_hit_rate_limit() {
+	$key  = fluidampr_cc_rate_limit_key();
+	$hits = (int) get_transient( $key );
+	set_transient( $key, $hits + 1, HOUR_IN_SECONDS );
+}
+
+/**
+ * Security/event log without email addresses, tokens, or secrets.
+ *
+ * Disable with: add_filter( 'fluidampr_cc_log_enabled', '__return_false' );
+ *
+ * @param string $event Event name.
+ * @return void
+ */
+function fluidampr_cc_log( $event ) {
+	if ( ! apply_filters( 'fluidampr_cc_log_enabled', true ) ) {
+		return;
+	}
+
+	$event = preg_replace( '/[^a-z0-9_]/', '', strtolower( (string) $event ) );
+
+	if ( '' === $event ) {
+		return;
+	}
+
+	error_log( 'fluidampr-newsletter: ' . $event ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 }
 
 /**
@@ -492,6 +600,20 @@ function fluidampr_cc_handle_admin() {
 			fluidampr_cc_set( 'list_id_dealer', sanitize_text_field( wp_unslash( $_POST['fluidampr_cc_list_id_dealer'] ) ) );
 		}
 
+		if ( function_exists( 'fluidampr_turnstile_set' ) ) {
+			if ( ! defined( 'FLUIDAMPR_TURNSTILE_SITE_KEY' ) ) {
+				fluidampr_turnstile_set( 'site_key', sanitize_text_field( wp_unslash( $_POST['fluidampr_turnstile_site_key'] ?? '' ) ) );
+			}
+
+			if ( ! defined( 'FLUIDAMPR_TURNSTILE_SECRET' ) ) {
+				$turnstile_secret = sanitize_text_field( wp_unslash( $_POST['fluidampr_turnstile_secret'] ?? '' ) );
+
+				if ( '' !== $turnstile_secret ) {
+					fluidampr_turnstile_set( 'secret', $turnstile_secret );
+				}
+			}
+		}
+
 		wp_safe_redirect( add_query_arg( 'cc_saved', '1', fluidampr_cc_redirect_uri() ) );
 		exit;
 	}
@@ -659,6 +781,27 @@ function fluidampr_render_constant_contact_settings() {
 			echo '</td></tr>';
 		}
 	}
+
+	echo '<tr><th scope="row"><label for="fluidampr_turnstile_site_key">' . esc_html__( 'Turnstile site key', 'fluidampr' ) . '</label></th><td>';
+	printf(
+		'<input class="regular-text" type="text" id="fluidampr_turnstile_site_key" name="fluidampr_turnstile_site_key" value="%s" autocomplete="off" %s>',
+		esc_attr( function_exists( 'fluidampr_turnstile_get' ) ? fluidampr_turnstile_get( 'site_key' ) : '' ),
+		defined( 'FLUIDAMPR_TURNSTILE_SITE_KEY' ) ? 'readonly' : ''
+	);
+	echo '<p class="description">' . esc_html__( 'Cloudflare Turnstile widget key. Required with the secret to enable the security check on the footer form.', 'fluidampr' ) . '</p>';
+	echo '</td></tr>';
+
+	echo '<tr><th scope="row"><label for="fluidampr_turnstile_secret">' . esc_html__( 'Turnstile secret key', 'fluidampr' ) . '</label></th><td>';
+	$turnstile_saved = function_exists( 'fluidampr_turnstile_get' ) && '' !== fluidampr_turnstile_get( 'secret' );
+	echo '<input class="regular-text" type="password" id="fluidampr_turnstile_secret" name="fluidampr_turnstile_secret" value="" autocomplete="new-password" placeholder="' . esc_attr( $turnstile_saved ? __( 'Saved — leave blank to keep', 'fluidampr' ) : '' ) . '"' . ( defined( 'FLUIDAMPR_TURNSTILE_SECRET' ) ? ' readonly' : '' ) . '>';
+	echo '<p class="description">' . esc_html__( 'Verified on the server. Never commit this value.', 'fluidampr' ) . '</p>';
+	echo '</td></tr>';
+
+	echo '<tr><th scope="row">' . esc_html__( 'Turnstile status', 'fluidampr' ) . '</th><td>';
+	echo ( function_exists( 'fluidampr_turnstile_is_enabled' ) && fluidampr_turnstile_is_enabled() )
+		? '<span>' . esc_html__( 'Enabled. Footer signups require a successful Turnstile check.', 'fluidampr' ) . '</span>'
+		: '<span>' . esc_html__( 'Not enabled. Honeypot and rate limiting still run.', 'fluidampr' ) . '</span>';
+	echo '</td></tr>';
 
 	echo '</tbody></table>';
 
