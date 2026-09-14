@@ -371,7 +371,8 @@ function fluidampr_seed_page_definitions() {
 			'one_full',
 			true,
 			fluidampr_alb_heading( 'Where to buy', 'Dealers' )
-			. fluidampr_alb_text( '<p>Fluidampr performance dampers are sold through authorized performance distributors, retailers, and engine builders.</p><p>Use the dealer tools on this page as they come online. MAP/public pricing will display from catalog data; ecommerce can be added later without rebuilding these templates.</p>' )
+			. fluidampr_alb_text( '<p>Fluidampr performance dampers are sold through authorized performance distributors, retailers, and engine builders.</p>' )
+			. fluidampr_alb_text( '[fluidampr_dealer_lookup]', 'fluid-dealers-embed' )
 		),
 		array( 'custom_class' => 'fluid-section fluid-interior' )
 	);
