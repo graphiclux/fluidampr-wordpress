@@ -370,7 +370,7 @@ function fluidampr_seed_page_definitions() {
 		fluidampr_alb_col(
 			'one_full',
 			true,
-			fluidampr_alb_heading( 'Where to buy', 'Dealers' )
+			fluidampr_alb_heading( 'Where to buy', 'Dealers', 'h1' )
 			. fluidampr_alb_text( '<p>Fluidampr performance dampers are sold through authorized performance distributors, retailers, and engine builders.</p>' )
 			. fluidampr_alb_text( '[fluidampr_dealer_lookup]', 'fluid-dealers-embed' )
 		),
