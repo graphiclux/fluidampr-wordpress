@@ -144,6 +144,7 @@ function fluidampr_shortcode_instagram_feed( $atts, $content = null ) {
 		array(
 			'shortcode' => '',
 			'count'     => '3',
+			'static'    => '0',
 		),
 		$atts,
 		'fluid_instagram_feed'

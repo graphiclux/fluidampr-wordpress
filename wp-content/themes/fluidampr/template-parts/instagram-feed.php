@@ -15,9 +15,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $count = isset( $atts['count'] ) ? (int) $atts['count'] : 3;
 $count = max( 1, min( 21, $count ) );
-$items = function_exists( 'fluidampr_instagram_get_items' )
-	? fluidampr_instagram_get_items( $count )
-	: array();
+$items = ( ! empty( $atts['static'] ) && '0' !== (string) $atts['static'] && function_exists( 'fluidampr_instagram_fallback_items' ) )
+	? array_slice( fluidampr_instagram_fallback_items(), 0, $count )
+	: ( function_exists( 'fluidampr_instagram_get_items' ) ? fluidampr_instagram_get_items( $count ) : array() );
 
 if ( ! $items ) {
 	$items = function_exists( 'fluidampr_instagram_fallback_items' )
