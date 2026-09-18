@@ -27,6 +27,7 @@ $fluidampr_modules = array(
 	'inc/shortcodes.php',
 	'inc/knowledge-base.php',
 	'inc/alb-content.php',
+	'inc/knowledge-base-import.php',
 	'inc/layout-seed.php',
 );
 

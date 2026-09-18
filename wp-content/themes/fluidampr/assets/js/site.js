@@ -415,7 +415,9 @@
 		var input = qs('[data-fluid-kb-q]', root);
 		var category = qs('[data-fluid-kb-category]', root);
 		var status = qs('[data-fluid-kb-status]', root);
-		var results = qs('[data-fluid-kb-results]', root);
+		var resultsList = qs('[data-fluid-kb-list]', root);
+		var featured = qs('.fluid-kb__featured', root);
+		var resultsHeading = qs('[data-fluid-kb-results-heading]', root);
 		var restUrl = settings.knowledgeBaseRest || '';
 
 		if (!form || !restUrl) {
@@ -430,6 +432,14 @@
 			var params = new URLSearchParams();
 			var q = input ? input.value.trim() : '';
 			var topic = category ? category.value : (root.getAttribute('data-category') || '');
+			var activeSearch = !!(q || topic);
+
+			if (featured) {
+				featured.hidden = activeSearch;
+			}
+			if (resultsHeading) {
+				resultsHeading.textContent = activeSearch ? 'Search Results' : 'All articles';
+			}
 
 			if (q) {
 				params.set('q', q);
@@ -459,8 +469,8 @@
 					status.textContent = articles.length ? '' : (payload && payload.message) || settings.i18n.kbEmpty || 'No matching articles were found.';
 				}
 
-				if (results) {
-					results.innerHTML = articles.length ? kbListHtml(articles) : '';
+				if (resultsList) {
+					resultsList.innerHTML = articles.length ? kbListHtml(articles) : '';
 				}
 			}).catch(function () {
 				if (status) {

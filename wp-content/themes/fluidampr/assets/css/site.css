@@ -2170,7 +2170,11 @@ body.fluidampr-theme .fluid-finder__subtitle {
 }
 
 .fluid-kb {
-	max-width: 46rem;
+	max-width: 64rem;
+}
+
+.fluid-kb--archive {
+	max-width: 64rem;
 }
 
 .fluid-kb__form {
@@ -2249,6 +2253,21 @@ body.fluidampr-theme .fluid-finder__subtitle {
 
 .fluid-kb-related ul {
 	margin: 0.5rem 0 0;
+}
+
+.fluid-kb-related li {
+	margin: 0.35rem 0;
+	overflow-wrap: anywhere;
+}
+
+.fluid-kb-related a {
+	display: inline-block;
+	padding: 0.15rem 0;
+}
+
+.fluid-kb__results > h2,
+.fluid-kb__featured > h2 {
+	margin-top: 1.5rem;
 }
 
 @media (max-width: 700px) {

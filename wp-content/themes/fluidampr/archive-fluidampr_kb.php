@@ -24,12 +24,7 @@ echo avia_title( array( 'title' => $title ) );
 do_action( 'ava_after_main_title' );
 
 $main_class = apply_filters( 'avf_custom_main_classes', 'av-main-archive-fluidampr-kb', 'archive-fluidampr_kb.php' );
-$topics     = get_terms(
-	array(
-		'taxonomy'   => fluidampr_kb_taxonomy(),
-		'hide_empty' => true,
-	)
-);
+$topics     = fluidampr_kb_discoverable_topics();
 ?>
 		<div class="container_wrap container_wrap_first main_color <?php avia_layout_class( 'main' ); ?>">
 			<div class="container">

@@ -338,6 +338,77 @@ function fluidampr_kb_is_featured( $post_id ) {
 }
 
 /**
+ * IDs intentionally kept public for local review but hidden from normal discovery.
+ *
+ * @return array<int, int>
+ */
+function fluidampr_kb_discovery_excluded_ids() {
+	return array( 5719, 5720, 5693, 5694, 5695 );
+}
+
+/**
+ * Whether an article is available in customer-like listings.
+ *
+ * @param int $post_id Article ID.
+ * @return bool
+ */
+function fluidampr_kb_is_discoverable( $post_id ) {
+	return ! in_array( (int) $post_id, fluidampr_kb_discovery_excluded_ids(), true );
+}
+
+/**
+ * Return only topics which contain discoverable published articles.
+ *
+ * @return array<int, WP_Term>
+ */
+function fluidampr_kb_discoverable_topics() {
+	$ids = get_posts(
+		array(
+			'post_type'      => fluidampr_kb_post_type(),
+			'post_status'    => 'publish',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+			'post__not_in'   => fluidampr_kb_discovery_excluded_ids(),
+		)
+	);
+
+	if ( ! $ids ) {
+		return array();
+	}
+
+	$terms = get_terms(
+		array(
+			'taxonomy'   => fluidampr_kb_taxonomy(),
+			'hide_empty' => true,
+			'object_ids' => array_map( 'intval', $ids ),
+		)
+	);
+
+	return is_wp_error( $terms ) ? array() : $terms;
+}
+
+/**
+ * Build a clean excerpt without exposing heading labels or markup.
+ *
+ * @param WP_Post $post Article.
+ * @return string
+ */
+function fluidampr_kb_clean_excerpt( $post ) {
+	$content = (string) $post->post_content;
+	$content = preg_replace( '/<h[1-6][^>]*>.*?<\/h[1-6]>/is', ' ', $content );
+	$content = preg_replace( '/<\/(p|div|li|br|h[1-6])\s*>/i', ' ', $content );
+	$content = html_entity_decode( wp_strip_all_tags( (string) $content ), ENT_QUOTES, 'UTF-8' );
+	$content = preg_replace( '/\s+/u', ' ', trim( $content ) );
+
+	if ( '' === $content ) {
+		$content = html_entity_decode( wp_strip_all_tags( (string) $post->post_excerpt ), ENT_QUOTES, 'UTF-8' );
+		$content = preg_replace( '/\s+/u', ' ', trim( $content ) );
+	}
+
+	return wp_trim_words( (string) $content, 36, '…' );
+}
+
+/**
  * Format an article for REST and frontend lists.
  *
  * @param WP_Post|int $post Article.
@@ -365,8 +436,7 @@ function fluidampr_kb_format_article( $post ) {
 		}
 	}
 
-	$excerpt = has_excerpt( $post ) ? $post->post_excerpt : wp_trim_words( wp_strip_all_tags( $post->post_content ), 36, '…' );
-	$excerpt = html_entity_decode( wp_strip_all_tags( (string) $excerpt ), ENT_QUOTES, 'UTF-8' );
+	$excerpt = fluidampr_kb_clean_excerpt( $post );
 
 	return array(
 		'id'                 => (int) $post->ID,
@@ -379,6 +449,21 @@ function fluidampr_kb_format_article( $post ) {
 		'related_product_ids'=> fluidampr_kb_get_product_ids( $post->ID ),
 	);
 }
+
+/** Keep review-only records out of public archive/search queries. */
+function fluidampr_kb_exclude_from_frontend_queries( $query ) {
+	if ( is_admin() || ! $query instanceof WP_Query || $query->get( 'name' ) || $query->get( 'p' ) || $query->get( 'page_id' ) ) {
+		return;
+	}
+
+	$post_type = $query->get( 'post_type' );
+	$is_kb     = fluidampr_kb_post_type() === $post_type || ( is_array( $post_type ) && in_array( fluidampr_kb_post_type(), $post_type, true ) );
+
+	if ( $is_kb || $query->is_post_type_archive( fluidampr_kb_post_type() ) || $query->is_tax( fluidampr_kb_taxonomy() ) ) {
+		$query->set( 'post__not_in', array_values( array_unique( array_merge( (array) $query->get( 'post__not_in' ), fluidampr_kb_discovery_excluded_ids() ) ) ) );
+	}
+}
+add_action( 'pre_get_posts', 'fluidampr_kb_exclude_from_frontend_queries', 20 );
 
 /**
  * Query published Knowledge Base articles.
@@ -402,6 +487,7 @@ function fluidampr_kb_query_articles( $args = array() ) {
 	$query_args = array(
 		'post_type'           => fluidampr_kb_post_type(),
 		'post_status'         => 'publish',
+		'post__not_in'        => fluidampr_kb_discovery_excluded_ids(),
 		'posts_per_page'      => min( 50, max( 1, (int) $args['posts_per_page'] ) ),
 		'no_found_rows'       => true,
 		'ignore_sticky_posts' => true,
@@ -516,48 +602,40 @@ function fluidampr_kb_search( $args = array() ) {
 		return fluidampr_kb_query_articles( $shared );
 	}
 
-	$by_sku     = array();
-	$by_keyword = array();
+	$query = new WP_Query(
+		array(
+			'post_type'      => fluidampr_kb_post_type(),
+			'post_status'    => 'publish',
+			'posts_per_page' => 100,
+			'post__not_in'   => fluidampr_kb_discovery_excluded_ids(),
+			'no_found_rows'  => true,
+			'tax_query'      => '' !== (string) $args['category'] ? array( array( 'taxonomy' => fluidampr_kb_taxonomy(), 'field' => 'slug', 'terms' => sanitize_title( (string) $args['category'] ) ) ) : array(),
+		)
+	);
 
-	if ( '' !== $sku ) {
-		$by_sku = fluidampr_kb_query_articles(
-			array_merge(
-				$shared,
-				array(
-					's'   => '',
-					'sku' => $sku,
-				)
-			)
-		);
-	}
-
-	if ( '' !== $search ) {
-		$by_keyword = fluidampr_kb_query_articles(
-			array_merge(
-				$shared,
-				array(
-					's'   => $search,
-					'sku' => '',
-				)
-			)
-		);
-	}
-
-	$merged = array();
-	$seen   = array();
-
-	foreach ( array_merge( $by_sku, $by_keyword ) as $article ) {
-		$id = (int) ( $article['id'] ?? 0 );
-
-		if ( $id <= 0 || isset( $seen[ $id ] ) ) {
+	$needle = strtolower( $search );
+	$product_id = '' !== $sku ? fluidampr_kb_product_id_from_sku( $sku ) : 0;
+	$ranked = array();
+	foreach ( $query->posts as $post ) {
+		if ( $featured && ! fluidampr_kb_is_featured( $post->ID ) ) {
 			continue;
 		}
-
-		$seen[ $id ] = true;
-		$merged[]    = $article;
+		$title = strtolower( wp_strip_all_tags( get_the_title( $post ) ) );
+		$text  = strtolower( wp_strip_all_tags( $post->post_content ) );
+		$score = 0;
+		$skus  = fluidampr_kb_get_part_numbers( $post->ID );
+		if ( '' !== $sku && in_array( $sku, $skus, true ) ) { $score += 1000; }
+		if ( '' !== $sku && $product_id > 0 && in_array( $product_id, fluidampr_kb_get_product_ids( $post->ID ), true ) ) { $score += 900; }
+		if ( '' !== $needle ) {
+			if ( $title === $needle ) { $score += 700; }
+			if ( preg_match( '/\\b' . preg_quote( $needle, '/' ) . '\\b/i', $title ) ) { $score += 500; }
+			if ( preg_match( '/\\b' . preg_quote( $needle, '/' ) . '\\b/i', $text ) ) { $score += 200; }
+			if ( false !== strpos( $title, $needle ) || false !== strpos( $text, $needle ) ) { $score += 25; }
+		}
+		if ( $score > 0 ) { $ranked[] = array( 'score' => $score, 'article' => fluidampr_kb_format_article( $post ) ); }
 	}
-
-	return array_slice( $merged, 0, (int) $shared['posts_per_page'] );
+	usort( $ranked, static function ( $a, $b ) { return $a['score'] === $b['score'] ? strcasecmp( $a['article']['title'], $b['article']['title'] ) : $b['score'] - $a['score']; } );
+	return array_slice( array_map( static function ( $row ) { return $row['article']; }, $ranked ), 0, (int) $shared['posts_per_page'] );
 }
 
 /**
@@ -613,6 +691,78 @@ function fluidampr_kb_related_products_html( $post_id ) {
 	return '<aside class="fluid-kb-related fluid-kb-related--products"><h2>' . esc_html__( 'Related products', 'fluidampr' ) . '</h2><ul>' . implode( '', $items ) . '</ul></aside>';
 }
 
+/** Render authoritative instruction attachments associated with an article. */
+function fluidampr_kb_related_documents_html( $post_id ) {
+	if ( ! fluidampr_kb_is_discoverable( $post_id ) ) {
+		return '';
+	}
+
+	$ids = get_post_meta( (int) $post_id, '_fluidampr_kb_instruction_attachment_id' );
+	$items = array();
+	foreach ( array_unique( array_map( 'intval', (array) $ids ) ) as $attachment_id ) {
+		$attachment = get_post( $attachment_id );
+		if ( ! $attachment instanceof WP_Post || 'attachment' !== $attachment->post_type || 'application/pdf' !== get_post_mime_type( $attachment_id ) ) {
+			continue;
+		}
+		$title = get_the_title( $attachment_id );
+		$items[] = '<li><a href="' . esc_url( wp_get_attachment_url( $attachment_id ) ) . '">' . esc_html( $title ? $title : __( 'Installation instructions', 'fluidampr' ) ) . '</a></li>';
+	}
+
+	return $items ? '<aside class="fluid-kb-related fluid-kb-related--documents"><h2>' . esc_html__( 'Related Instructions & Documents', 'fluidampr' ) . '</h2><ul>' . implode( '', $items ) . '</ul></aside>' : '';
+}
+
+/** Render genuinely related, discoverable Knowledge Base articles. */
+function fluidampr_kb_related_article_html( $post_id ) {
+	$post = get_post( $post_id );
+	if ( ! $post instanceof WP_Post ) { return ''; }
+	$term_ids = wp_get_object_terms( $post_id, fluidampr_kb_taxonomy(), array( 'fields' => 'ids' ) );
+	if ( is_wp_error( $term_ids ) || ! $term_ids ) { return ''; }
+	$related = get_posts( array( 'post_type' => fluidampr_kb_post_type(), 'post_status' => 'publish', 'posts_per_page' => 4, 'post__not_in' => array_merge( fluidampr_kb_discovery_excluded_ids(), array( (int) $post_id ) ), 'tax_query' => array( array( 'taxonomy' => fluidampr_kb_taxonomy(), 'field' => 'term_id', 'terms' => $term_ids ) ), 'orderby' => 'title', 'order' => 'ASC' ) );
+	if ( ! $related ) { return ''; }
+	$items = array();
+	foreach ( $related as $article ) { $items[] = '<li><a href="' . esc_url( get_permalink( $article ) ) . '">' . esc_html( get_the_title( $article ) ) . '</a></li>'; }
+	return '<aside class="fluid-kb-related fluid-kb-related--articles"><h2>' . esc_html__( 'Related Knowledge Base Articles', 'fluidampr' ) . '</h2><ul>' . implode( '', $items ) . '</ul></aside>';
+}
+
+/** Hide internal review blocks and source warnings from public rendering. */
+function fluidampr_kb_filter_public_content( $content ) {
+	if ( is_admin() || ! is_singular( fluidampr_kb_post_type() ) ) { return $content; }
+	$content = preg_replace( '/<h[1-6][^>]*>\s*review note\s*<\/h[1-6]>.*?(?=<h[1-6]|$)/is', '', $content );
+	$content = preg_replace( '/<p[^>]*>.*?(revision review|source revision|current live attachment|technical review).*?<\/p>/is', '', $content );
+	return $content;
+}
+add_filter( 'the_content', 'fluidampr_kb_filter_public_content', 9 );
+
+/** Remove the internal review prefix from direct local comparison pages. */
+function fluidampr_kb_filter_public_title( $title, $post_id = 0 ) {
+	if ( ! is_admin() && is_singular( fluidampr_kb_post_type() ) && 0 === strpos( $title, '[Review draft] ' ) ) {
+		$title = substr( $title, 15 );
+	}
+	return $title;
+}
+add_filter( 'the_title', 'fluidampr_kb_filter_public_title', 10, 2 );
+
+function fluidampr_kb_filter_document_title( $title ) {
+	if ( ! is_admin() && is_singular( fluidampr_kb_post_type() ) && 0 === strpos( $title, '[Review draft] ' ) ) {
+		$title = substr( $title, 15 );
+	}
+	return $title;
+}
+add_filter( 'pre_get_document_title', 'fluidampr_kb_filter_document_title' );
+
+function fluidampr_kb_filter_document_title_parts( $parts ) {
+	if ( ! is_admin() && is_singular( fluidampr_kb_post_type() ) && ! empty( $parts['title'] ) && 0 === strpos( $parts['title'], '[Review draft] ' ) ) {
+		$parts['title'] = substr( $parts['title'], 15 );
+	}
+	return $parts;
+}
+add_filter( 'document_title_parts', 'fluidampr_kb_filter_document_title_parts' );
+
+function fluidampr_kb_filter_wp_title( $title ) {
+	return ( ! is_admin() && is_singular( fluidampr_kb_post_type() ) ) ? preg_replace( '/^\[Review draft\]\s*/', '', (string) $title ) : $title;
+}
+add_filter( 'wp_title', 'fluidampr_kb_filter_wp_title', 999 );
+
 /**
  * Related-article list markup for a WooCommerce product.
  *
@@ -663,7 +813,7 @@ function fluidampr_kb_append_related_products( $content ) {
 
 	$appended = true;
 
-	return $content . fluidampr_kb_related_products_html( get_the_ID() );
+	return $content . fluidampr_kb_related_documents_html( get_the_ID() ) . fluidampr_kb_related_products_html( get_the_ID() ) . fluidampr_kb_related_article_html( get_the_ID() );
 }
 add_filter( 'the_content', 'fluidampr_kb_append_related_products', 20 );
 
@@ -750,12 +900,7 @@ function fluidampr_kb_shortcode( $atts ) {
 
 	$featured_only = in_array( strtolower( (string) $atts['featured'] ), array( '1', 'true', 'yes' ), true );
 	$category      = sanitize_title( (string) $atts['category'] );
-	$topics        = get_terms(
-		array(
-			'taxonomy'   => fluidampr_kb_taxonomy(),
-			'hide_empty' => false,
-		)
-	);
+	$topics        = fluidampr_kb_discoverable_topics();
 
 	$featured = fluidampr_kb_query_articles(
 		array(
@@ -808,15 +953,16 @@ function fluidampr_kb_shortcode( $atts ) {
 		<?php endif; ?>
 
 		<section class="fluid-kb__results" data-fluid-kb-results>
+			<?php if ( ! $featured_only ) : ?><h2 data-fluid-kb-results-heading><?php esc_html_e( 'All articles', 'fluidampr' ); ?></h2><?php endif; ?>
 			<?php if ( $featured_only ) : ?>
 				<h2><?php esc_html_e( 'Common questions', 'fluidampr' ); ?></h2>
 			<?php endif; ?>
 			<?php if ( $initial ) : ?>
-				<?php echo fluidampr_kb_articles_list_html( $initial ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<div data-fluid-kb-list><?php echo fluidampr_kb_articles_list_html( $initial ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 			<?php elseif ( $featured_only ) : ?>
-				<p><?php esc_html_e( 'No featured questions have been published yet.', 'fluidampr' ); ?></p>
+				<div data-fluid-kb-list><p><?php esc_html_e( 'No featured questions have been published yet.', 'fluidampr' ); ?></p></div>
 			<?php else : ?>
-				<p><?php esc_html_e( 'No articles have been published yet.', 'fluidampr' ); ?></p>
+				<div data-fluid-kb-list><p><?php esc_html_e( 'No articles have been published yet.', 'fluidampr' ); ?></p></div>
 			<?php endif; ?>
 		</section>
 	</div>

@@ -37,6 +37,61 @@ function fluidampr_kb_add_metabox() {
 		'side',
 		'high'
 	);
+
+	add_meta_box(
+		'fluidampr-kb-source',
+		__( 'Source and review traceability', 'fluidampr' ),
+		'fluidampr_kb_render_source_metabox',
+		fluidampr_kb_post_type(),
+		'normal',
+		'default'
+	);
+}
+
+function fluidampr_kb_source_fields() {
+	return array(
+		'_fluidampr_kb_source_type'       => __( 'Source Type', 'fluidampr' ),
+		'_fluidampr_kb_source_filename'   => __( 'Source Filename', 'fluidampr' ),
+		'_fluidampr_kb_source_section'    => __( 'Source Section/Page', 'fluidampr' ),
+		'_fluidampr_kb_source_revision'   => __( 'Source Revision', 'fluidampr' ),
+		'_fluidampr_kb_source_hash'       => __( 'Source Hash', 'fluidampr' ),
+		'_fluidampr_kb_applicable_parts'  => __( 'Applicable Part Numbers', 'fluidampr' ),
+		'_fluidampr_kb_import_date'       => __( 'Import Date', 'fluidampr' ),
+		'_fluidampr_kb_review_status'     => __( 'Review Status', 'fluidampr' ),
+		'_fluidampr_kb_internal_notes'    => __( 'Internal Notes', 'fluidampr' ),
+	);
+}
+
+function fluidampr_kb_review_statuses() {
+	return array(
+		'Draft / Unreviewed',
+		'Source Verified',
+		'Technical Review Required',
+		'Approved',
+		'Hold',
+	);
+}
+
+function fluidampr_kb_render_source_metabox( $post ) {
+	$fields = fluidampr_kb_source_fields();
+	echo '<table class="form-table"><tbody>';
+	foreach ( $fields as $key => $label ) {
+		$value = get_post_meta( $post->ID, $key, true );
+		echo '<tr><th><label for="' . esc_attr( $key ) . '">' . esc_html( $label ) . '</label></th><td>';
+		if ( '_fluidampr_kb_review_status' === $key ) {
+			echo '<select class="regular-text" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '">';
+			foreach ( fluidampr_kb_review_statuses() as $status ) {
+				echo '<option value="' . esc_attr( $status ) . '" ' . selected( $value, $status, false ) . '>' . esc_html( $status ) . '</option>';
+			}
+			echo '</select>';
+		} elseif ( '_fluidampr_kb_internal_notes' === $key ) {
+			echo '<textarea class="large-text" rows="4" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '">' . esc_textarea( $value ) . '</textarea>';
+		} else {
+			echo '<input class="regular-text" type="text" id="' . esc_attr( $key ) . '" name="' . esc_attr( $key ) . '" value="' . esc_attr( $value ) . '">';
+		}
+		echo '</td></tr>';
+	}
+	echo '</tbody></table>';
 }
 
 /**
@@ -106,6 +161,17 @@ function fluidampr_kb_save_metabox( $post_id ) {
 
 	if ( ! current_user_can( 'edit_post', $post_id ) ) {
 		return;
+	}
+
+	foreach ( fluidampr_kb_source_fields() as $key => $label ) {
+		if ( ! isset( $_POST[ $key ] ) ) {
+			continue;
+		}
+		$value = '_fluidampr_kb_internal_notes' === $key ? sanitize_textarea_field( wp_unslash( $_POST[ $key ] ) ) : sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
+		if ( '_fluidampr_kb_review_status' === $key && ! in_array( $value, fluidampr_kb_review_statuses(), true ) ) {
+			$value = 'Draft / Unreviewed';
+		}
+		update_post_meta( $post_id, $key, $value );
 	}
 
 	$featured = isset( $_POST['fluidampr_kb_featured'] ) ? '1' : '';
