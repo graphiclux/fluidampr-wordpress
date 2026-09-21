@@ -2382,6 +2382,82 @@ body.fluidampr-theme .fluid-finder__subtitle {
 	}
 }
 
+/* Final footer alignment against the approved Components & Styles footer. */
+#footer-page .fluid-footer-brand img,
+#footer-page .fluid-footer-brand .avia-image-container img {
+	width: 230px;
+}
+
+#footer-page .fluid-footer-newsletter .fluid-newsletter-embed {
+	margin: 0 0 24px !important;
+}
+
+#footer-page .fluid-footer-newsletter .av-special-heading {
+	margin-bottom: 16px !important;
+}
+
+#footer-page .fluid-footer-newsletter .avia_textblock p {
+	margin-bottom: 16px;
+}
+
+#footer-page .fluid-footer-newsletter .avia-image-container {
+	margin-right: 12px;
+}
+
+#footer-page .fluid-footer-newsletter .avia-image-container img {
+	width: 48px;
+	height: auto;
+}
+
+#footer-page .fluid-footer-newsletter .fluid-footer-sfi-block {
+	display: block !important;
+	clear: both;
+	margin: 12px 0 0 !important;
+}
+
+#footer-page .fluid-footer-newsletter .fluid-footer-sfi img {
+	width: 64px;
+}
+
+#footer-page .fluid-footer-newsletter > .avia-image-container:last-of-type {
+	clear: both;
+	display: block !important;
+	margin: 12px 0 0 !important;
+}
+
+#footer-page .fluid-footer-newsletter > .avia-image-container:last-of-type img {
+	width: 64px !important;
+}
+
+#top.fluidampr-theme .fluid-footer__form {
+	margin-bottom: 24px !important;
+}
+
+/* The finalized Figma footer keeps security/audience controls out of the visual
+ * composition. Keep both controls in the form for submission and accessibility,
+ * but remove their layout footprint. */
+#footer-page .fluid-footer__form .fluid-turnstile,
+#footer-page .fluid-footer__form .cf-turnstile {
+	position: absolute;
+	left: -9999px;
+	top: 0;
+	width: 1px !important;
+	height: 1px !important;
+	overflow: hidden;
+	opacity: 0;
+}
+
+#footer-page .fluid-footer__audience {
+	position: absolute;
+	left: -9999px;
+	top: 0;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	margin: 0;
+	opacity: 0;
+}
+
 .fluid-kb {
 	max-width: 64rem;
 }
