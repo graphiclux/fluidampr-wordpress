@@ -2965,3 +2965,34 @@ body.fluidampr-theme .fluid-finder__subtitle {
 		padding-top: 49px;
 	}
 }
+
+/* -------------------------------------------------------------------------- */
+/* Homepage Figma alignment, batch 3 (desktop >=1025px only): vertical rhythm */
+/* below the hero, measured against the 1440 Figma frame.                     */
+/* The cards section's own bottom rule is dropped on the homepage so only the */
+/* community section's top rule draws (previously two 1px lines stacked).     */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 1025px) {
+	#top.fluidampr-theme .avia-section.fluid-home-cards {
+		padding-bottom: 38px;
+		background-image: none;
+	}
+
+	#top.fluidampr-theme .avia-section.fluid-home-community {
+		padding-top: 67px;
+		padding-bottom: 35px;
+	}
+
+	#top.fluidampr-theme .fluid-home-community .av-special-heading .av-subheading_above {
+		margin-bottom: 4px;
+	}
+
+	#top.fluidampr-theme .fluid-home-community .av-special-heading {
+		margin-bottom: -2.4px;
+		padding-bottom: 0;
+	}
+
+	#top.fluidampr-theme .avia-section.fluid-cta-section.fluid-why-section {
+		padding: 53px 0 53px !important;
+	}
+}
