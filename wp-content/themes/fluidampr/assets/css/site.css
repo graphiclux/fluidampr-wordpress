@@ -3160,6 +3160,15 @@ body.fluidampr-theme .fluid-finder__subtitle {
 	#footer-page .fluid-footer-follow-block {
 		margin-top: 10px;
 	}
+
+	/* Contact lines: Figma uses the navy body ink (#000014); the icons stay blue. */
+	#top.fluidampr-theme #footer-page .fluid-footer-contact,
+	#top.fluidampr-theme #footer-page .fluid-footer-contact p,
+	#top.fluidampr-theme #footer-page .fluid-footer-contact a,
+	#top.fluidampr-theme #footer-page .fluid-footer-pin,
+	#top.fluidampr-theme #footer-page .fluid-footer-follow {
+		color: var(--fluid-color-text) !important;
+	}
 }
 
 @media (min-width: 1360px) {
