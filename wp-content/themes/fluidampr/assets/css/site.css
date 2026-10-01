@@ -3182,3 +3182,25 @@ body.fluidampr-theme .fluid-finder__subtitle {
 	#footer-page .fluid-footer-products,
 	#footer-page .fluid-footer-technology { justify-self: start; width: 160px; }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Why panel button fix (desktop only). The 248px Figma width with 16px side  */
+/* padding left 216px for a ~218px label, so "Learn more about Fluidampr"     */
+/* wrapped onto two 38px lines inside a 40px button and overflowed the top.   */
+/* Keep the label on one line, drop the side padding (the button is a fixed   */
+/* width and centres its label) and let the flex box centre it vertically.    */
+/* Same -0.1px tracking as the hero finder subtitle to hit the Figma ink      */
+/* width (~214px).                                                            */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 1025px) {
+	#top.fluidampr-theme .fluid-cta-section .fluid-why-copy .fluid-button {
+		display: inline-flex !important;
+		align-items: center;
+		justify-content: center;
+		padding: 0 !important;
+		white-space: nowrap;
+		line-height: 1.25;
+		letter-spacing: -0.1px;
+		text-align: center;
+	}
+}
