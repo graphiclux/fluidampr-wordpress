@@ -221,10 +221,56 @@ add_filter( 'plugin_action_links_leaflet-map/leaflet-map.php', 'fluidampr_leafle
 /*
  * ---------------------------------------------------------------------------
  * Comments are switched off site-wide (existing comment data is NOT deleted).
- * Note: this also turns off WooCommerce product reviews, which are comments
- * on the product post type.
+ *
+ * PRODUCT REVIEWS ON/OFF: WooCommerce reviews are comments on the "product"
+ * post type, so they are switched off with everything else. Two switches
+ * control them; each is a one-word edit (change true to false):
+ *
+ *   1. fluidampr_product_reviews_page_hidden()  -> Products > Reviews admin page
+ *      true  = page hidden, direct URL redirects to the dashboard (current)
+ *      false = Products > Reviews comes back
+ *
+ *   2. fluidampr_product_reviews_disabled()     -> reviews on the front end
+ *      true  = products have no reviews tab/form, comments_open() is false
+ *      false = product comment support and comments_open() are left to
+ *              WooCommerce, so the Reviews tab and form work again
+ *              (comments stay off for posts, pages and Knowledge Base)
+ *
+ * To fully bring product reviews back, flip BOTH to false. Either can also be
+ * overridden without editing this file via the filters
+ * 'fluidampr_hide_product_reviews_page' and 'fluidampr_disable_product_reviews'.
  * ---------------------------------------------------------------------------
  */
+
+/**
+ * Switch 1: hide the Products > Reviews admin screen.
+ * Set to false to bring back the Products > Reviews screen.
+ *
+ * @return bool
+ */
+function fluidampr_product_reviews_page_hidden() {
+	return (bool) apply_filters( 'fluidampr_hide_product_reviews_page', true ); // <-- change true to false.
+}
+
+/**
+ * Switch 2: turn product reviews off on the front end.
+ * Set to false to re-enable product comment support and comments_open() for products.
+ *
+ * @return bool
+ */
+function fluidampr_product_reviews_disabled() {
+	return (bool) apply_filters( 'fluidampr_disable_product_reviews', true ); // <-- change true to false.
+}
+
+/**
+ * Whether comments are forced off for a given post (switch 2 exempts products).
+ *
+ * @param int|WP_Post|null $post Post ID or object.
+ * @return bool
+ */
+function fluidampr_comments_off_for( $post = null ) {
+	return ! ( 'product' === get_post_type( $post ) && ! fluidampr_product_reviews_disabled() );
+}
 
 /**
  * Remove comment and trackback support from every post type.
@@ -235,6 +281,10 @@ add_filter( 'plugin_action_links_leaflet-map/leaflet-map.php', 'fluidampr_leafle
  */
 function fluidampr_remove_comment_support() {
 	foreach ( get_post_types() as $post_type ) {
+		if ( 'product' === $post_type && ! fluidampr_product_reviews_disabled() ) {
+			continue; // Switch 2 is off: leave WooCommerce's product review support alone.
+		}
+
 		remove_post_type_support( $post_type, 'comments' );
 		remove_post_type_support( $post_type, 'trackbacks' );
 	}
@@ -288,31 +338,42 @@ function fluidampr_redirect_comment_screens() {
 }
 add_action( 'admin_init', 'fluidampr_redirect_comment_screens', 1 );
 
-// Front end: comments and pings closed, nothing to list, count is zero.
-add_filter( 'comments_open', '__return_false', 99 );
-add_filter( 'pings_open', '__return_false', 99 );
+/**
+ * Close comments and pings (front end and new submissions).
+ *
+ * @param bool       $open    Whether open.
+ * @param int|string $post_id Post ID.
+ * @return bool
+ */
+function fluidampr_close_comments( $open, $post_id = 0 ) {
+	return fluidampr_comments_off_for( $post_id ) ? false : $open;
+}
+add_filter( 'comments_open', 'fluidampr_close_comments', 99, 2 );
+add_filter( 'pings_open', 'fluidampr_close_comments', 99, 2 );
 
 /**
  * Hide existing comments from front-end templates (data stays in the database).
  *
  * @param array<int, object> $comments Comments.
+ * @param int                $post_id  Post ID.
  * @return array<int, object>
  */
-function fluidampr_empty_comments_array( $comments ) {
-	return is_admin() ? $comments : array();
+function fluidampr_empty_comments_array( $comments, $post_id = 0 ) {
+	return ( is_admin() || ! fluidampr_comments_off_for( $post_id ) ) ? $comments : array();
 }
-add_filter( 'comments_array', 'fluidampr_empty_comments_array', 99 );
+add_filter( 'comments_array', 'fluidampr_empty_comments_array', 99, 2 );
 
 /**
  * Report a zero comment count on the front end.
  *
- * @param int|string $count Count.
+ * @param int|string $count   Count.
+ * @param int        $post_id Post ID.
  * @return int|string
  */
-function fluidampr_zero_comment_count( $count ) {
-	return is_admin() ? $count : 0;
+function fluidampr_zero_comment_count( $count, $post_id = 0 ) {
+	return ( is_admin() || ! fluidampr_comments_off_for( $post_id ) ) ? $count : 0;
 }
-add_filter( 'get_comments_number', 'fluidampr_zero_comment_count', 99 );
+add_filter( 'get_comments_number', 'fluidampr_zero_comment_count', 99, 2 );
 
 /**
  * Redirect comment feeds to the home page.
@@ -326,3 +387,54 @@ function fluidampr_redirect_comment_feeds() {
 	}
 }
 add_action( 'template_redirect', 'fluidampr_redirect_comment_feeds', 1 );
+
+/**
+ * Hide Products > Reviews (WooCommerce, admin.php?page=product-reviews).
+ *
+ * Controlled by fluidampr_product_reviews_page_hidden(); see the switch notes
+ * at the top of this comments block.
+ *
+ * @return void
+ */
+function fluidampr_hide_product_reviews_menu() {
+	global $submenu;
+
+	if ( ! fluidampr_product_reviews_page_hidden() ) {
+		return;
+	}
+
+	$parent = 'edit.php?post_type=product';
+
+	remove_submenu_page( $parent, 'product-reviews' );
+
+	// Avoid leaving an empty Products menu for users who could only moderate reviews.
+	if ( empty( $submenu[ $parent ] ) ) {
+		remove_menu_page( $parent );
+	}
+}
+add_action( 'admin_menu', 'fluidampr_hide_product_reviews_menu', 9999 );
+
+/**
+ * Send direct visits to the Product Reviews screen to the dashboard.
+ *
+ * Runs at the end of admin_menu (not admin_init): WordPress checks page access
+ * right after the menu is built and would show "Sorry, you are not allowed to
+ * access this page" for the removed submenu before admin_init is reached.
+ *
+ * @return void
+ */
+function fluidampr_redirect_product_reviews_page() {
+	global $pagenow;
+
+	if ( ! fluidampr_product_reviews_page_hidden() || ! in_array( $pagenow, array( 'edit.php', 'admin.php' ), true ) ) {
+		return;
+	}
+
+	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	if ( 'product-reviews' === $page ) {
+		wp_safe_redirect( admin_url() );
+		exit;
+	}
+}
+add_action( 'admin_menu', 'fluidampr_redirect_product_reviews_page', 10000 );
