@@ -125,8 +125,8 @@ add_filter( 'woocommerce_show_addons_page', 'fluidampr_hide_woocommerce_addons_p
  * Leaflet Map: move the plugin's top-level admin menu under Settings.
  *
  * The plugin (class.admin.php) registers a top-level "Leaflet Map" menu with two
- * pages (Settings: manage_options, slug "leaflet-map"; Shortcode helper:
- * edit_posts, slug "leaflet-shortcode-helper"). It has no post types or
+ * pages (slug "leaflet-map", manage_options; slug "leaflet-shortcode-helper",
+ * edit_posts). They appear under Settings as "Leaflet Map" and "Leaflet Shortcode Helper". It has no post types or
  * taxonomies. We re-register the same pages, with the same slugs, capabilities
  * and the plugin's own callbacks, under Settings → options-general.php and drop
  * the top-level item. Plugin files are not modified.
@@ -148,6 +148,11 @@ function fluidampr_move_leaflet_menu_under_settings() {
 		'leaflet-map'              => 'settings_page',
 		'leaflet-shortcode-helper' => 'shortcode_page',
 	);
+	// Clear names so the entries are easy to find among the core Settings pages.
+	$labels    = array(
+		'leaflet-map'              => 'Leaflet Map',
+		'leaflet-shortcode-helper' => 'Leaflet Shortcode Helper',
+	);
 	$instance  = Leaflet_Map_Admin::init();
 	$items     = $submenu['leaflet-map'];
 
@@ -165,8 +170,8 @@ function fluidampr_move_leaflet_menu_under_settings() {
 
 		add_submenu_page(
 			'options-general.php',
-			(string) ( $item[3] ?? $item[0] ),
-			(string) $item[0],
+			$labels[ $slug ],
+			$labels[ $slug ],
 			(string) $item[1],
 			$slug,
 			array( $instance, $callbacks[ $slug ] )
