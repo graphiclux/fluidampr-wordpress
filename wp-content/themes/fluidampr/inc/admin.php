@@ -217,3 +217,112 @@ function fluidampr_leaflet_plugin_settings_link( $links ) {
 	return $links;
 }
 add_filter( 'plugin_action_links_leaflet-map/leaflet-map.php', 'fluidampr_leaflet_plugin_settings_link', 20 );
+
+/*
+ * ---------------------------------------------------------------------------
+ * Comments are switched off site-wide (existing comment data is NOT deleted).
+ * Note: this also turns off WooCommerce product reviews, which are comments
+ * on the product post type.
+ * ---------------------------------------------------------------------------
+ */
+
+/**
+ * Remove comment and trackback support from every post type.
+ *
+ * Runs late so custom post types and WooCommerce products are registered.
+ *
+ * @return void
+ */
+function fluidampr_remove_comment_support() {
+	foreach ( get_post_types() as $post_type ) {
+		remove_post_type_support( $post_type, 'comments' );
+		remove_post_type_support( $post_type, 'trackbacks' );
+	}
+}
+add_action( 'init', 'fluidampr_remove_comment_support', 100 );
+
+/**
+ * Remove the Comments admin menu item.
+ *
+ * @return void
+ */
+function fluidampr_remove_comments_menu() {
+	remove_menu_page( 'edit-comments.php' );
+}
+add_action( 'admin_menu', 'fluidampr_remove_comments_menu', 9999 );
+
+/**
+ * Remove the comments bubble from the admin bar (front end and admin).
+ *
+ * @param WP_Admin_Bar $wp_admin_bar Admin bar.
+ * @return void
+ */
+function fluidampr_remove_comments_admin_bar_node( $wp_admin_bar ) {
+	$wp_admin_bar->remove_node( 'comments' );
+}
+add_action( 'admin_bar_menu', 'fluidampr_remove_comments_admin_bar_node', 999 );
+
+/**
+ * Remove the dashboard Recent Comments widget.
+ *
+ * @return void
+ */
+function fluidampr_remove_recent_comments_widget() {
+	remove_meta_box( 'dashboard_recent_comments', 'dashboard', 'normal' );
+	remove_meta_box( 'dashboard_recent_comments', 'dashboard', 'side' );
+}
+add_action( 'wp_dashboard_setup', 'fluidampr_remove_recent_comments_widget', 999 );
+
+/**
+ * Send direct visits to the comment screens to the dashboard.
+ *
+ * @return void
+ */
+function fluidampr_redirect_comment_screens() {
+	global $pagenow;
+
+	if ( in_array( $pagenow, array( 'edit-comments.php', 'comment.php' ), true ) ) {
+		wp_safe_redirect( admin_url() );
+		exit;
+	}
+}
+add_action( 'admin_init', 'fluidampr_redirect_comment_screens', 1 );
+
+// Front end: comments and pings closed, nothing to list, count is zero.
+add_filter( 'comments_open', '__return_false', 99 );
+add_filter( 'pings_open', '__return_false', 99 );
+
+/**
+ * Hide existing comments from front-end templates (data stays in the database).
+ *
+ * @param array<int, object> $comments Comments.
+ * @return array<int, object>
+ */
+function fluidampr_empty_comments_array( $comments ) {
+	return is_admin() ? $comments : array();
+}
+add_filter( 'comments_array', 'fluidampr_empty_comments_array', 99 );
+
+/**
+ * Report a zero comment count on the front end.
+ *
+ * @param int|string $count Count.
+ * @return int|string
+ */
+function fluidampr_zero_comment_count( $count ) {
+	return is_admin() ? $count : 0;
+}
+add_filter( 'get_comments_number', 'fluidampr_zero_comment_count', 99 );
+
+/**
+ * Redirect comment feeds to the home page.
+ *
+ * @return void
+ */
+function fluidampr_redirect_comment_feeds() {
+	if ( is_comment_feed() ) {
+		wp_safe_redirect( home_url( '/' ), 301 );
+		exit;
+	}
+}
+add_action( 'template_redirect', 'fluidampr_redirect_comment_feeds', 1 );
