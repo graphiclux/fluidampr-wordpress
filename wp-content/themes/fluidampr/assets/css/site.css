@@ -209,6 +209,8 @@ html {
 	}
 }
 
+
+
 .fluidampr-theme .content,
 .fluidampr-theme .entry-content-wrapper,
 .fluidampr-theme .flex_column,
@@ -479,6 +481,13 @@ body.fluid-overlay-open {
 	letter-spacing: 0;
 	text-transform: none !important;
 	margin-bottom: 1.75rem;
+}
+
+#top.fluidampr-theme .fluid-hero__heading.fluid-hero__heading--figma > span {
+	display: inline;
+	font-size: inherit;
+	font-style: italic;
+	line-height: inherit;
 }
 
 #top.fluidampr-theme .fluid-hero__accent {
@@ -987,7 +996,7 @@ img.fluid-instagram__media {
 @media (min-width: 1025px) {
 	#footer-page .fluid-footer-section .entry-content-wrapper {
 		display: grid;
-		grid-template-columns: 270px 160px 160px minmax(0, 438px);
+		grid-template-columns: 230px 160px 160px minmax(0, 438px);
 		justify-content: space-between;
 		column-gap: 84px;
 		align-items: start;
@@ -1037,6 +1046,30 @@ img.fluid-instagram__media {
 	#footer-page .fluid-footer-social {
 		margin-left: auto;
 		text-align: right;
+	}
+}
+
+@media (max-width: 767px) {
+	#top.fluidampr-theme .fluid-hero-heading-block > p > span {
+		display: flex !important;
+		flex-wrap: wrap;
+		white-space: normal !important;
+	}
+
+	#top.fluidampr-theme .fluid-hero-heading-block > p strong {
+		font-size: 1rem !important;
+	}
+
+	#top.fluidampr-theme .fluid-hero-heading-block > p strong:not(:last-of-type)::after {
+		height: 20px !important;
+		margin: 0 10px !important;
+	}
+
+	#top.fluidampr-theme .fluid-hero-heading-block > p strong:last-of-type::before {
+		flex-basis: 36px !important;
+		width: 36px !important;
+		height: 23px !important;
+		margin-right: 8px !important;
 	}
 }
 
@@ -1897,14 +1930,16 @@ body.fluidampr-theme .fluid-explore a {
 
 #top.fluidampr-theme .fluid-home-cards .iconbox.av-no-box .iconbox_icon,
 #top.fluidampr-theme .fluid-home-cards .iconbox_top .iconbox_icon {
-	position: static !important;
+	position: absolute !important;
 	left: auto !important;
 	top: auto !important;
 	float: none !important;
 	display: block !important;
+	left: 24px !important;
+	top: 24px !important;
 	width: 36px !important;
 	height: 36px !important;
-	margin: 0 0 8px !important;
+	margin: 0 !important;
 	padding: 0 !important;
 	font-size: 0 !important;
 	line-height: 1 !important;
@@ -1944,6 +1979,7 @@ body.fluidampr-theme .fluid-explore a {
 }
 
 #top.fluidampr-theme .fluid-home-cards .iconbox {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	height: 250px;
@@ -1968,11 +2004,15 @@ body.fluidampr-theme .fluid-explore a {
 	font-family: var(--fluid-font-display);
 	text-transform: none !important;
 	letter-spacing: var(--fluid-ls-heading) !important;
-	font-size: var(--fluid-fs-card-title) !important;
+	font-size: 1.25rem !important;
 	font-weight: var(--fluid-fw-semibold);
 	line-height: 1.4;
 	text-align: left;
 	color: var(--fluid-color-text);
+	min-height: 36px;
+	display: flex;
+	align-items: center;
+	padding-left: 44px;
 	margin: 0 0 8px;
 }
 
@@ -2087,17 +2127,33 @@ body.fluidampr-theme .fluid-explore a {
 #top.fluidampr-theme .fluid-why-feature {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 8px;
 	flex: 1 1 0;
 	min-height: 48px;
-	padding: 0 20px;
+	padding: 0 14px;
 	border-right: 1px solid #a6a6a6;
 	font-family: var(--fluid-font-display);
 	font-size: 1.125rem;
 	font-weight: var(--fluid-fw-bold);
 	line-height: 1.15;
+	white-space: nowrap;
 	color: var(--fluid-color-text) !important;
 }
+
+#top.fluidampr-theme .fluid-why-feature::before {
+	content: "";
+	display: block;
+	flex: 0 0 42px;
+	width: 42px;
+	height: 42px;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 38px 38px;
+}
+
+#top.fluidampr-theme .fluid-why-feature:nth-child(1)::before { background-image: url("../icons/rrm.svg"); }
+#top.fluidampr-theme .fluid-why-feature:nth-child(2)::before { background-image: url("../icons/wrench.svg"); }
+#top.fluidampr-theme .fluid-why-feature:nth-child(3)::before { background-image: url("../icons/shield.svg"); }
 
 #top.fluidampr-theme .fluid-why-feature:first-child { padding-left: 0; }
 #top.fluidampr-theme .fluid-why-feature:last-child { border-right: 0; }
@@ -2146,6 +2202,14 @@ body.fluidampr-theme .fluid-explore a {
 	line-height: 3rem;
 	letter-spacing: -0.4px !important;
 	text-transform: uppercase;
+}
+
+#top.fluidampr-theme .fluid-home-community .av-subheading_above {
+	text-transform: none;
+}
+
+#top.fluidampr-theme .fluid-home-community .av-special-heading {
+	margin-bottom: 0.35rem;
 }
 
 #top.fluidampr-theme .fluid-community-intro {
@@ -2427,6 +2491,99 @@ body.fluidampr-theme .fluid-finder__subtitle {
 
 #footer-page .fluid-footer-newsletter > .avia-image-container:last-of-type img {
 	width: 64px !important;
+}
+
+#footer-page .fluid-footer-links a,
+#footer-page .fluid-footer-newsletter .avia_textblock p {
+	color: #101321 !important;
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+#footer-page .fluid-footer-links p,
+#footer-page .fluid-footer-products,
+#footer-page .fluid-footer-technology {
+	gap: 21px;
+}
+
+#footer-page .fluid-footer-contact,
+#footer-page .fluid-footer-contact p {
+	gap: 16px;
+	font-size: 1rem;
+}
+
+#footer-page .fluid-footer-brand .avia-image-container {
+	position: relative;
+}
+
+#footer-page .fluid-footer-brand .avia-image-container::after {
+	content: "THE ORIGINAL";
+	position: absolute;
+	right: 14px;
+	top: 17px;
+	font-family: var(--fluid-font);
+	font-size: 5px;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: 0.02em;
+	color: #111;
+}
+
+#footer-page .fluid-footer__form input::placeholder {
+	text-transform: capitalize;
+}
+
+/* Match the approved hero proof-point row while keeping its wording in the
+ * editable Enfold Text Block. Zero-size the typed separators and flag emoji,
+ * then render dividers and the flag asset consistently across platforms. */
+#top.fluidampr-theme .fluid-hero-heading-block h1 {
+	margin-bottom: 12px !important;
+}
+
+#top.fluidampr-theme .fluid-hero-heading-block > p {
+	margin: 0 0 14px;
+}
+
+#top.fluidampr-theme .fluid-hero-heading-block > p > span {
+	font-size: 0;
+	white-space: nowrap;
+}
+
+#top.fluidampr-theme .fluid-hero-heading-block > p strong {
+	display: inline-flex;
+	align-items: center;
+	font-size: 1.125rem;
+	font-weight: 600;
+	line-height: 1.5;
+	color: #111 !important;
+}
+
+#top.fluidampr-theme .fluid-hero-heading-block > p strong:not(:last-of-type)::after {
+	content: "";
+	display: inline-block;
+	height: 24px;
+	margin: 0 20px;
+	border-left: 1px solid #b8b8b8;
+}
+
+#top.fluidampr-theme .fluid-hero-heading-block > p strong:last-of-type::before {
+	content: "";
+	display: inline-block;
+	flex: 0 0 56px;
+	width: 56px;
+	height: 36px;
+	margin-right: 20px;
+	background: url("../images/made-in-usa.png") center / contain no-repeat;
+}
+
+@media (min-width: 1025px) {
+	#top.fluidampr-theme .fluid-home-hero .flex_column.first > :first-child {
+		transform: translateY(-24px);
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .flex_column.first > :last-child {
+		transform: translateY(-17px);
+	}
 }
 
 #top.fluidampr-theme .fluid-footer__form {
