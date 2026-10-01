@@ -3082,3 +3082,94 @@ body.fluidampr-theme .fluid-finder__subtitle {
 		background-position: -1px center !important;
 	}
 }
+
+/* -------------------------------------------------------------------------- */
+/* Footer alignment to the Figma frame, batch 3 (SITEWIDE, desktop only).     */
+/* Column x positions, newsletter field/button, vertical offsets and flag /   */
+/* SFI sizes measured against the 1440 Figma frame. Column placement is only  */
+/* fixed at >=1360px (the 1280px container); between 1025 and 1359 the       */
+/* earlier flexible grid stays in force. No markup or wording changes.        */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 1025px) {
+	/* Newsletter field: white fill, 1px grey border, 38px field + 40px button. */
+	#top.fluidampr-theme #footer-page .fluid-footer__form {
+		align-items: flex-start;
+		gap: 16px;
+		margin-bottom: 16px !important;
+	}
+
+	#top.fluidampr-theme #footer-page .fluid-footer__form input[type="email"] {
+		margin-top: 1px;
+		background: #fff !important;
+		border: 1px solid #8a8d91 !important;
+		box-shadow: none !important;
+	}
+
+	#top.fluidampr-theme #footer-page .fluid-footer__form .fluid-button {
+		box-sizing: border-box;
+		width: 92px;
+		height: 40px !important;
+		min-height: 40px !important;
+		margin-top: 0;
+		padding: 0 !important;
+		justify-content: center;
+	}
+
+	/* Vertical offsets inside the newsletter column. */
+	#footer-page .fluid-footer-newsletter .fluid-newsletter-embed {
+		margin-bottom: 15px !important;
+	}
+
+	#footer-page .fluid-footer-newsletter .av-special-heading {
+		margin-bottom: 8px !important;
+	}
+
+	#footer-page .fluid-footer-newsletter .avia_textblock p {
+		margin-bottom: 23px;
+	}
+
+	/* "Made in the USA" row: 55px flag, label without extra tracking. */
+	#footer-page .fluid-footer-newsletter .avia-image-container img {
+		width: 59px;
+	}
+
+	#footer-page .fluid-footer-newsletter .avia-image-container {
+		margin-right: 9px;
+	}
+
+	#footer-page .fluid-footer-newsletter .fluid-footer-usa-label {
+		letter-spacing: 0;
+	}
+
+	/* SFI badge scaled to the Figma ink width (~108px ink). */
+	#footer-page .fluid-footer-newsletter > .avia-image-container:last-of-type,
+	#footer-page .fluid-footer-newsletter .fluid-footer-sfi-block {
+		margin-top: 24px !important;
+	}
+
+	#footer-page .fluid-footer-newsletter .fluid-footer-sfi img,
+	#footer-page .fluid-footer-newsletter > .avia-image-container:last-of-type img {
+		width: 119px !important;
+	}
+
+	/* "Follow us" + social icons sit lower in the first column. */
+	#footer-page .fluid-footer-brand {
+		gap: 17px;
+	}
+
+	#footer-page .fluid-footer-follow-block {
+		margin-top: 10px;
+	}
+}
+
+@media (min-width: 1360px) {
+	#footer-page .fluid-footer-section .entry-content-wrapper {
+		grid-template-columns: 316px 244px 263px 457px;
+		justify-content: start;
+		column-gap: 0;
+	}
+
+	#footer-page .fluid-footer-brand { justify-self: start; width: 230px; }
+	#footer-page .fluid-footer-products,
+	#footer-page .fluid-footer-technology { justify-self: start; width: 160px; }
+}
