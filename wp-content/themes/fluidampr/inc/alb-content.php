@@ -186,7 +186,7 @@ function fluidampr_alb_iconbox( $icon, $title, $text, $url, $label, $variant = '
 	);
 
 	if ( 'link' === $variant ) {
-		$content = $text . '<p><a class="fluid-card__link" href="' . esc_url( $url ) . '">' . esc_html( $label ) . ' <span aria-hidden="true">›</span></a></p>';
+		$content = $text . '<p><a href="' . esc_url( $url ) . '">' . esc_html( $label ) . ' <span aria-hidden="true">›</span></a></p>';
 		return fluidampr_sc( 'av_icon_box', $atts, $content );
 	}
 
@@ -261,7 +261,7 @@ function fluidampr_seed_page_definitions() {
 			'one_half',
 			true,
 			fluidampr_alb_text(
-				'<h1 class="fluid-hero__heading fluid-hero__heading--figma">Build with Confidence.</h1>',
+				'<h1>Build with Confidence.</h1>',
 				'fluid-hero-heading-block'
 			)
 			. fluidampr_alb_text( '[fluid_finder_panel mode="compact"]', 'fluid-finder-embed' )
@@ -293,9 +293,9 @@ function fluidampr_seed_page_definitions() {
 			'one_full',
 			true,
 			fluidampr_alb_heading( 'Real builders. Real results.', 'The Fluidampr community' )
-			. fluidampr_alb_text( '<p class="fluid-community-intro">From daily drivers to race day, see how builders are putting Fluidampr to work.</p>' )
+			. fluidampr_alb_text( '<p>From daily drivers to race day, see how builders are putting Fluidampr to work.</p>', 'fluid-community-intro-block' )
 			. fluidampr_alb_text( '[fluid_instagram_feed static="1"]', 'fluid-instagram-embed' )
-			. fluidampr_alb_text( '<p class="fluid-explore"><a href="' . esc_url( fluidampr_url( '/community/' ) ) . '">Explore the Community <span aria-hidden="true">›</span></a></p>' )
+			. fluidampr_alb_text( '<p><a href="' . esc_url( fluidampr_url( '/community/' ) ) . '">Explore the Community <span aria-hidden="true">›</span></a></p>', 'fluid-explore-block' )
 		),
 		array(
 			'padding'      => 'default',
@@ -308,7 +308,8 @@ function fluidampr_seed_page_definitions() {
 			'one_half',
 			true,
 			fluidampr_alb_text(
-				'<div class="fluid-why-copy"><h2>Why choose Fluidampr</h2><div class="fluid-why-features"><div class="fluid-why-feature"><span class="fluid-why-icon fluid-why-icon--rrm" aria-hidden="true"></span><span>Broad RRM<br>Protection</span></div><div class="fluid-why-feature"><span class="fluid-why-icon fluid-why-icon--wrench" aria-hidden="true"></span><span>Maintenance-Free<br>Design</span></div><div class="fluid-why-feature"><span class="fluid-why-icon fluid-why-icon--shield" aria-hidden="true"></span><span>SFI 18.1<br>Certified</span></div></div><a class="fluid-button" href="' . esc_url( fluidampr_url( '/technology/' ) ) . '">Learn more about Fluidampr</a></div>'
+				'<div><h2>Why choose Fluidampr</h2><div><div>Broad RPM<br>Protection</div><div>Maintenance-Free<br>Design</div><div>SFI 18.1<br>Certified</div></div><p><a href="' . esc_url( fluidampr_url( '/technology/' ) ) . '">Learn more about Fluidampr</a></p></div>',
+				'fluid-why-text'
 			),
 			'fluid-why-copy-column',
 			array(
@@ -514,11 +515,11 @@ function fluidampr_seed_page_definitions() {
 			true,
 			fluidampr_alb_image( fluidampr_logo_url(), get_bloginfo( 'name' ), 'left', home_url( '/' ) )
 			. fluidampr_alb_text(
-				'<p class="fluid-footer-contact"><a class="fluid-footer-pin" href="https://www.google.com/maps/search/?api=1&amp;query=180+Zoar+Valley+Road%2C+Springville%2C+NY+14141" target="_blank" rel="noopener noreferrer">180 Zoar Valley Road<br>Springville, NY 14141</a><br><a href="tel:+17165921000">(716) 592-1000</a><br><a href="mailto:sales@fluidampr.com">sales@fluidampr.com</a></p>',
+				'<p><a href="https://www.google.com/maps/search/?api=1&amp;query=180+Zoar+Valley+Road%2C+Springville%2C+NY+14141" target="_blank" rel="noopener noreferrer">180 Zoar Valley Road<br>Springville, NY 14141</a><br><a href="tel:+17165921000">(716) 592-1000</a><br><a href="mailto:sales@fluidampr.com">sales@fluidampr.com</a></p>',
 				'fluid-footer-contact-block'
 			) .
 			fluidampr_alb_text(
-				'<p class="fluid-footer-follow">Follow us</p><p class="fluid-footer-social"><a class="fluid-footer-social__link fluid-footer-social__link--facebook" href="' . esc_url( fluidampr_get_option( 'facebook' ) ) . '" rel="noopener noreferrer" target="_blank"><span class="screen-reader-text">Facebook</span></a> <a class="fluid-footer-social__link fluid-footer-social__link--instagram" href="' . esc_url( fluidampr_get_option( 'instagram' ) ) . '" rel="noopener noreferrer" target="_blank"><span class="screen-reader-text">Instagram</span></a> <a class="fluid-footer-social__link fluid-footer-social__link--youtube" href="' . esc_url( fluidampr_get_option( 'youtube' ) ) . '" rel="noopener noreferrer" target="_blank"><span class="screen-reader-text">YouTube</span></a></p>',
+				'<p>Follow us</p><p><a href="' . esc_url( fluidampr_get_option( 'facebook' ) ) . '" rel="noopener noreferrer" target="_blank"><span>Facebook</span></a> <a href="' . esc_url( fluidampr_get_option( 'instagram' ) ) . '" rel="noopener noreferrer" target="_blank"><span>Instagram</span></a> <a href="' . esc_url( fluidampr_get_option( 'youtube' ) ) . '" rel="noopener noreferrer" target="_blank"><span>YouTube</span></a></p>',
 				'fluid-footer-follow-block'
 			),
 			'fluid-footer-brand'
@@ -562,8 +563,8 @@ function fluidampr_seed_page_definitions() {
 			. ( file_exists( FLUIDAMPR_THEME_PATH . '/assets/images/made-in-usa.png' )
 				? fluidampr_alb_image( fluidampr_theme_img( 'made-in-usa.png' ), 'Made in the USA', 'left' )
 				: '' )
-			. fluidampr_alb_text( '<p class="fluid-footer-usa-label">Made in the USA</p>' )
-			. fluidampr_alb_text( '<div class="fluid-footer-sfi"><img src="' . esc_url( $sfi ) . '" alt="SFI 18.1 certified"></div>', 'fluid-footer-sfi-block' ),
+			. fluidampr_alb_text( '<p>Made in the USA</p>', 'fluid-footer-usa-block' )
+			. fluidampr_alb_text( '<div><img src="' . esc_url( $sfi ) . '" alt="SFI 18.1 certified"></div>', 'fluid-footer-sfi-block' ),
 			'fluid-footer-newsletter'
 		),
 		array(
@@ -577,7 +578,7 @@ function fluidampr_seed_page_definitions() {
 			'one_full',
 			true,
 			fluidampr_alb_text(
-				'<p class="fluid-footer-credits">© ' . esc_html( gmdate( 'Y' ) ) . ' Fluidampr. All rights reserved. <a href="' . esc_url( fluidampr_url( '/privacy-policy/' ) ) . '">Privacy policy</a> <a href="' . esc_url( fluidampr_url( '/terms/' ) ) . '">Terms of service</a> <a href="' . esc_url( fluidampr_url( '/privacy-policy/' ) ) . '">Cookies settings</a></p>',
+				'<p>© ' . esc_html( gmdate( 'Y' ) ) . ' Fluidampr. All rights reserved. <a href="' . esc_url( fluidampr_url( '/privacy-policy/' ) ) . '">Privacy policy</a> <a href="' . esc_url( fluidampr_url( '/terms/' ) ) . '">Terms of service</a> <a href="' . esc_url( fluidampr_url( '/privacy-policy/' ) ) . '">Cookies settings</a></p>',
 				'fluid-footer-legal-block'
 			),
 				'fluid-footer-legal'
@@ -592,7 +593,7 @@ function fluidampr_seed_page_definitions() {
 		fluidampr_alb_col(
 			'one_half',
 			true,
-			fluidampr_alb_text( '<p class="fluid-404-code">404</p>' )
+			fluidampr_alb_text( '<p>404</p>', 'fluid-404-code-block' )
 			. fluidampr_alb_heading( 'This page threw a harmonic.', '', 'h1', 'fluid-heading fluid-404-heading' )
 			. fluidampr_alb_text( '<p>We scanned every damper from idle to redline and this URL is still out of balance. It may have been deleted, mistyped, or shaken loose at high RPM.</p><p>Search the site, find a damper, or head back to a page that still has all its fasteners.</p>' )
 			. fluidampr_sc(
