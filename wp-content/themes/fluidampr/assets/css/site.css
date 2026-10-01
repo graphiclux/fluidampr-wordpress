@@ -2885,3 +2885,83 @@ body.fluidampr-theme .fluid-finder__subtitle {
 		white-space: nowrap;
 	}
 }
+
+/* -------------------------------------------------------------------------- */
+/* Homepage Figma alignment, batch 2 (desktop >=1025px only):                 */
+/* hero heading + proof-point row + finder offset + hero-to-cards gap.        */
+/* Replaces the earlier translateY() nudges on the hero columns with real     */
+/* layout offsets so the section height is honest. Scoped to .fluid-home-*.   */
+/* Positions measured against the 1440-wide Figma frame (heading ink top 157, */
+/* proof row 210-249, finder top 274, cards outline 657).                      */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 1025px) {
+	#top.fluidampr-theme .avia-section.fluid-home-hero {
+		padding-top: 55px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .flex_column.first > :first-child,
+	#top.fluidampr-theme .fluid-home-hero .flex_column.first > :last-child {
+		transform: none;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .flex_column:not(.first) {
+		margin-top: -1px;
+		margin-left: 77px;
+	}
+
+	/* Heading to proof row: Figma row starts 3px under the h1 box. The base
+	 * rule uses !important, so this needs the same flag plus more specificity. */
+	#top.fluidampr-theme .fluid-home-hero .fluid-hero-heading-block h1 {
+		margin-bottom: 3px !important;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-hero-heading-block > p {
+		margin: 0 0 24px;
+	}
+
+	/* Proof-point row: 40px tall, navy text, 1px #8b8d91 separators 40px tall.
+	 * The inline color:#111111 in the ALB <span> is overridden here (no DB edit). */
+	#top.fluidampr-theme .fluid-home-hero .fluid-hero-heading-block > p > span {
+		display: flex;
+		align-items: center;
+		height: 40px;
+		color: var(--fluid-color-text) !important;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-hero-heading-block > p strong {
+		font-family: var(--fluid-font-display);
+		font-size: 1.2rem;
+		font-weight: var(--fluid-fw-bold);
+		line-height: 1.2;
+		color: var(--fluid-color-text) !important;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-hero-heading-block > p strong:not(:last-of-type)::after {
+		height: 40px;
+		margin: 0 24px;
+		border-left-color: var(--fluid-color-text-muted);
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-hero-heading-block > p strong:last-of-type::before {
+		flex: 0 0 58px;
+		width: 58px;
+		height: 30px;
+		margin-right: 22px;
+	}
+
+	/* Finder: Figma shows plain fields (no select chevrons) and a subtitle that
+	 * measures ~4px narrower than Inter 16px. */
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder select {
+		background-image: none !important;
+		padding-right: 16px !important;
+	}
+
+	body.fluidampr-theme .fluid-home-hero .fluid-finder__bar .fluid-finder__subtitle {
+		letter-spacing: -0.1px;
+	}
+
+	/* Hero to cards: Figma finder bottom 609 -> card outline 657. */
+	#top.fluidampr-theme .avia-section.fluid-home-cards {
+		padding-top: 49px;
+	}
+}
