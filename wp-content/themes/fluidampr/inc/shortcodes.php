@@ -52,7 +52,7 @@ function fluidampr_shortcode_finder_panel( $atts ) {
 	<div class="fluid-finder <?php echo $is_full ? 'fluid-finder--full' : 'fluid-finder--compact'; ?>" data-fluid-finder data-mode="<?php echo esc_attr( $atts['mode'] ); ?>">
 		<div class="fluid-finder__bar">
 			<h2 class="fluid-finder__title"><?php esc_html_e( 'Find your damper', 'fluidampr' ); ?></h2>
-			<p class="fluid-finder__subtitle"><?php esc_html_e( 'Search by vehicle, engine, or part number.', 'fluidampr' ); ?></p>
+			<p class="fluid-finder__subtitle"><?php esc_html_e( 'Search by vehicle, engine, or part number', 'fluidampr' ); ?></p>
 		</div>
 
 		<div class="fluid-finder__body">
