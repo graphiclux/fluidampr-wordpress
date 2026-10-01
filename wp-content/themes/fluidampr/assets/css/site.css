@@ -2996,3 +2996,89 @@ body.fluidampr-theme .fluid-finder__subtitle {
 		padding: 53px 0 53px !important;
 	}
 }
+
+/* -------------------------------------------------------------------------- */
+/* Homepage Figma alignment, batch 3 (desktop >=1025px only): "Why choose"    */
+/* panel. 1px #c6c9cc outer edge with the 5px blue accent inside it, 226px    */
+/* tall, benefit columns/separators/icons placed to the Figma x positions.    */
+/* Benefit copy stays in the existing ALB markup; only the CSS icon changes.  */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 1025px) {
+	#top.fluidampr-theme .fluid-why-section .flex_column_table,
+	#top.fluidampr-theme .fluid-why-section .av-equal-height-column-flextable {
+		height: 226px;
+		min-height: 226px;
+		max-height: 226px;
+		border: 1px solid #c6c9cc;
+	}
+
+	.fluidampr-theme .fluid-why-section .flex_column,
+	.fluidampr-theme .fluid-why-section .fluid-why-copy-column,
+	.fluidampr-theme .fluid-why-section .fluid-cta-media {
+		height: 224px;
+	}
+
+	#top.fluidampr-theme .fluid-why-section .fluid-why-copy-column {
+		flex: 0 0 729px;
+		width: 729px !important;
+		max-width: 729px;
+		border-left: 5px solid var(--fluid-color-primary);
+		padding: 22px 30px 17px 24px !important;
+	}
+
+	#top.fluidampr-theme .fluid-why-features {
+		flex-wrap: nowrap;
+		width: 680px;
+		max-width: none;
+		margin-bottom: 0;
+	}
+
+	#top.fluidampr-theme .fluid-why-feature {
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		gap: 21px;
+		height: 55px;
+		min-height: 55px;
+		padding: 0 0 0 23px;
+		border-right: 1px solid #8a8d91;
+		font-size: 1.2rem;
+		line-height: 28px;
+	}
+
+	#top.fluidampr-theme .fluid-why-feature:nth-child(1) { width: 196px; padding-left: 0; }
+	#top.fluidampr-theme .fluid-why-feature:nth-child(2) { width: 276px; }
+	#top.fluidampr-theme .fluid-why-feature:nth-child(3) { width: auto; }
+
+	#top.fluidampr-theme .fluid-why-feature::before {
+		flex: 0 0 50px;
+		width: 50px;
+		height: 50px;
+		background-size: 50px 50px;
+	}
+
+	#top.fluidampr-theme .fluid-why-feature:nth-child(1)::before { background-image: url("../icons/why-activity.svg"); }
+	#top.fluidampr-theme .fluid-why-feature:nth-child(2)::before { background-image: url("../icons/why-wrench.svg"); }
+	#top.fluidampr-theme .fluid-why-feature:nth-child(3)::before {
+		background-image: url("../icons/why-shield-check.svg");
+		background-size: 38px 47px;
+		flex-basis: 50px;
+	}
+
+	#top.fluidampr-theme .fluid-cta-section .fluid-why-copy .fluid-button {
+		box-sizing: border-box;
+		width: 248px !important;
+		max-width: 248px;
+		height: 40px;
+		min-height: 40px;
+		margin: 32px 0 0 !important;
+		padding-top: 0;
+		padding-bottom: 0;
+		line-height: 38px;
+	}
+
+	/* Photo crop: scale/offset fitted to the Figma frame (662px wide, anchored left, vertically centred). */
+	#top.fluidampr-theme .fluid-why-section .fluid-cta-media {
+		background-size: 662px auto !important;
+		background-position: -1px center !important;
+	}
+}
