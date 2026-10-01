@@ -120,3 +120,100 @@ function fluidampr_hide_woocommerce_addons_page() {
 	return false;
 }
 add_filter( 'woocommerce_show_addons_page', 'fluidampr_hide_woocommerce_addons_page' );
+
+/**
+ * Leaflet Map: move the plugin's top-level admin menu under Settings.
+ *
+ * The plugin (class.admin.php) registers a top-level "Leaflet Map" menu with two
+ * pages (Settings: manage_options, slug "leaflet-map"; Shortcode helper:
+ * edit_posts, slug "leaflet-shortcode-helper"). It has no post types or
+ * taxonomies. We re-register the same pages, with the same slugs, capabilities
+ * and the plugin's own callbacks, under Settings → options-general.php and drop
+ * the top-level item. Plugin files are not modified.
+ *
+ * New URLs: options-general.php?page=leaflet-map and
+ *           options-general.php?page=leaflet-shortcode-helper
+ * Old admin.php?page=… URLs are redirected (see fluidampr_redirect_old_leaflet_urls()).
+ *
+ * @return void
+ */
+function fluidampr_move_leaflet_menu_under_settings() {
+	global $submenu;
+
+	if ( ! class_exists( 'Leaflet_Map_Admin' ) || empty( $submenu['leaflet-map'] ) ) {
+		return;
+	}
+
+	$callbacks = array(
+		'leaflet-map'              => 'settings_page',
+		'leaflet-shortcode-helper' => 'shortcode_page',
+	);
+	$instance  = Leaflet_Map_Admin::init();
+	$items     = $submenu['leaflet-map'];
+
+	// Remove the top-level entry (either slug, depending on the user's role) and its submenu.
+	remove_menu_page( 'leaflet-map' );
+	remove_menu_page( 'leaflet-shortcode-helper' );
+	unset( $submenu['leaflet-map'] );
+
+	foreach ( $items as $item ) {
+		$slug = (string) ( $item[2] ?? '' );
+
+		if ( ! isset( $callbacks[ $slug ] ) ) {
+			continue;
+		}
+
+		add_submenu_page(
+			'options-general.php',
+			(string) ( $item[3] ?? $item[0] ),
+			(string) $item[0],
+			(string) $item[1],
+			$slug,
+			array( $instance, $callbacks[ $slug ] )
+		);
+	}
+}
+add_action( 'admin_menu', 'fluidampr_move_leaflet_menu_under_settings', 9999 );
+
+/**
+ * Send the plugin's old admin.php?page=leaflet-* URLs to the new Settings location.
+ *
+ * Covers bookmarks and any plugin-generated links or redirects.
+ *
+ * @return void
+ */
+function fluidampr_redirect_old_leaflet_urls() {
+	global $pagenow;
+
+	if ( 'admin.php' !== $pagenow || empty( $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return;
+	}
+
+	$page = sanitize_key( wp_unslash( $_GET['page'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+	if ( ! in_array( $page, array( 'leaflet-map', 'leaflet-shortcode-helper' ), true ) ) {
+		return;
+	}
+
+	$args = map_deep( wp_unslash( $_GET ), 'sanitize_text_field' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	wp_safe_redirect( add_query_arg( $args, admin_url( 'options-general.php' ) ) );
+	exit;
+}
+add_action( 'admin_init', 'fluidampr_redirect_old_leaflet_urls', 1 );
+
+/**
+ * Point the plugin row "Settings" link at the new location.
+ *
+ * @param array<int|string, string> $links Action links.
+ * @return array<int|string, string>
+ */
+function fluidampr_leaflet_plugin_settings_link( $links ) {
+	foreach ( $links as $key => $link ) {
+		if ( false !== strpos( $link, 'admin.php?page=leaflet-map' ) ) {
+			$links[ $key ] = str_replace( 'admin.php?page=leaflet-map', 'options-general.php?page=leaflet-map', $link );
+		}
+	}
+
+	return $links;
+}
+add_filter( 'plugin_action_links_leaflet-map/leaflet-map.php', 'fluidampr_leaflet_plugin_settings_link', 20 );
