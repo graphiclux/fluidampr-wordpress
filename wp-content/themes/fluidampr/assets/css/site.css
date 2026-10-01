@@ -2731,3 +2731,157 @@ body.fluidampr-theme .fluid-finder__subtitle {
 		transition: none;
 	}
 }
+
+/* -------------------------------------------------------------------------- */
+/* Homepage Figma alignment, batch 1 (desktop >=1025px only):                 */
+/* community tiles, quick-link cards, hero finder + damper image.             */
+/* All selectors are scoped to homepage section classes (.fluid-home-*) so    */
+/* /find-your-damper/ and /community/ (21-up grid) are unaffected.            */
+/* Figma draws 1px strokes OUTSIDE each box, so borders are emulated with a   */
+/* 0 0 0 1px ring to keep boxes on the 1280px grid and match pixel extents.   */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 1025px) {
+	/* Hero: finder 735 wide (was 822) and damper image scaled to ~0.827 (449px). */
+	#top.fluidampr-theme .fluid-home-hero .entry-content-wrapper {
+		grid-template-columns: 736px 449px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .flex_column:not(.first) {
+		width: 449px !important;
+		margin-left: 76px;
+		margin-top: -9px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .flex_column:not(.first) .avia-image-container {
+		width: 449px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .flex_column:not(.first) .avia-image-container img {
+		width: 449px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder {
+		width: 735px;
+		border: 0;
+		box-shadow: 0 0 0 1px var(--fluid-color-border), 0 2px 30px rgba(0, 0, 19, 0.08);
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder__bar {
+		box-sizing: border-box;
+		justify-content: flex-start;
+		gap: 2px;
+		height: 70px;
+		min-height: 70px;
+		padding: 8px 24px 0;
+	}
+
+	body.fluidampr-theme .fluid-home-hero .fluid-finder__bar .fluid-finder__title {
+		font-size: 1.5rem;
+		line-height: 1.2 !important;
+	}
+
+	body.fluidampr-theme .fluid-home-hero .fluid-finder__bar .fluid-finder__subtitle {
+		font-size: 1rem;
+		line-height: 1.4;
+	}
+
+	/* Enfold's default form bottom margin added 20px below the Search row. */
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder__form {
+		margin-bottom: 0;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder__tabs {
+		gap: 10px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder__tab {
+		min-height: 32px;
+		height: 32px;
+		padding: 0 15px;
+		line-height: 32px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder__form {
+		gap: 21px 24px;
+	}
+
+	#top.fluidampr-theme .fluid-home-hero .fluid-finder__actions {
+		margin-top: 3px;
+	}
+
+	body.fluidampr-theme .fluid-home-hero .fluid-finder__actions .fluid-button {
+		height: 40px !important;
+		min-height: 40px !important;
+	}
+
+	/* Quick-link cards: 200px tall, 16px side padding, 24px titles, faint shadow. */
+	#top.fluidampr-theme .fluid-home-cards .iconbox {
+		height: 200px;
+		min-height: 200px;
+		max-height: 200px;
+		padding: 32px 16px 31px;
+		border: 0;
+		box-shadow: 0 0 0 1px var(--fluid-color-border), 0 2px 30px rgba(0, 0, 19, 0.08);
+	}
+
+	#top.fluidampr-theme .fluid-home-cards .iconbox.av-no-box .iconbox_icon,
+	#top.fluidampr-theme .fluid-home-cards .iconbox_top .iconbox_icon {
+		left: 16px !important;
+		top: 32px !important;
+	}
+
+	#top.fluidampr-theme .fluid-home-cards .iconbox_content_title {
+		font-size: var(--fluid-fs-card-title) !important;
+		margin: 0 0 14px;
+	}
+
+	#top.fluidampr-theme .fluid-home-cards .iconbox_content_container p {
+		margin: 0;
+	}
+
+	#top.fluidampr-theme .fluid-home-cards .iconbox_content_container p + p {
+		margin-top: 16px;
+	}
+
+	/* Community tiles (3-up homepage grid only): ~413x317 outer, avatar + text. */
+	#top.fluidampr-theme .fluid-home-community .fluid-instagram--count-3 .fluid-instagram__item {
+		aspect-ratio: 413 / 317;
+		border: 0;
+		box-shadow: 0 0 0 1px var(--fluid-color-border);
+	}
+
+	#top.fluidampr-theme .fluid-home-community .fluid-instagram--count-3 .fluid-instagram__overlay {
+		display: grid;
+		grid-template-columns: 50px minmax(0, 1fr);
+		grid-template-rows: auto auto;
+		column-gap: 16px;
+		row-gap: 4px;
+		align-items: center;
+		padding: 64px 16px 24px;
+	}
+
+	#top.fluidampr-theme .fluid-home-community .fluid-instagram--count-3 .fluid-instagram__overlay .fluid-icon {
+		display: grid;
+		place-items: center;
+		grid-row: 1 / span 2;
+		width: 50px;
+		height: 50px;
+		border-radius: 50%;
+		background: #fff;
+		color: var(--fluid-color-navy);
+	}
+
+	#top.fluidampr-theme .fluid-home-community .fluid-instagram--count-3 .fluid-instagram__overlay .fluid-icon svg {
+		width: 26px;
+		height: 26px;
+	}
+
+	#top.fluidampr-theme .fluid-home-community .fluid-instagram--count-3 .fluid-instagram__title,
+	#top.fluidampr-theme .fluid-home-community .fluid-instagram--count-3 .fluid-instagram__handle {
+		grid-column: 2;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
