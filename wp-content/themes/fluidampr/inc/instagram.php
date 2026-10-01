@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string
  */
 function fluidampr_instagram_transient_key() {
-	return 'fluidampr_ig_feed_v3';
+	return 'fluidampr_ig_feed_v4';
 }
 
 /**
@@ -202,6 +202,7 @@ function fluidampr_instagram_fetch_items( $count = 3 ) {
 			}
 
 			$items[] = array(
+				'id'        => isset( $post['id'] ) ? (string) $post['id'] : '',
 				'permalink' => (string) $post['permalink'],
 				'image'     => $image,
 				'title'     => fluidampr_instagram_caption_title( isset( $post['caption'] ) ? (string) $post['caption'] : '' ),
@@ -332,6 +333,119 @@ function fluidampr_instagram_maybe_refresh_token() {
 }
 
 /**
+ * Normalise one "hidden post" entry to a bare token.
+ *
+ * Accepts a full instagram.com/p/<code>/, /reel/<code>/ or /tv/<code>/ URL,
+ * a bare shortcode, or a numeric media ID. Anything else is dropped.
+ *
+ * @param string $entry One line from the Customizer textarea.
+ * @return string Token, or '' when the entry is not usable.
+ */
+function fluidampr_instagram_normalize_post_token( $entry ) {
+	$entry = trim( (string) $entry );
+
+	if ( '' === $entry ) {
+		return '';
+	}
+
+	if ( preg_match( '#(?:instagram\.com|instagr\.am)/(?:[A-Za-z0-9._]+/)?(?:p|reel|reels|tv)/([A-Za-z0-9_-]+)#i', $entry, $m ) ) {
+		return $m[1];
+	}
+
+	if ( preg_match( '/^[A-Za-z0-9_-]{5,64}$/', $entry ) ) {
+		return $entry;
+	}
+
+	return '';
+}
+
+/**
+ * Sanitize the Customizer "Hidden Instagram posts" textarea.
+ *
+ * Stores one clean token per line (shortcode or numeric ID).
+ *
+ * @param string $value Raw textarea value.
+ * @return string
+ */
+function fluidampr_sanitize_instagram_hidden_posts( $value ) {
+	$tokens = array();
+
+	foreach ( preg_split( '/\r\n|\r|\n|,/', sanitize_textarea_field( (string) $value ) ) as $line ) {
+		$token = fluidampr_instagram_normalize_post_token( $line );
+
+		if ( '' !== $token ) {
+			$tokens[ $token ] = $token;
+		}
+	}
+
+	return implode( "\n", $tokens );
+}
+
+/**
+ * Hidden post tokens from the Customizer.
+ *
+ * @return string[]
+ */
+function fluidampr_instagram_hidden_tokens() {
+	$raw    = fluidampr_get_option( 'instagram_hidden_posts' );
+	$tokens = array();
+
+	foreach ( preg_split( '/\r\n|\r|\n|,/', $raw ) as $line ) {
+		$token = fluidampr_instagram_normalize_post_token( $line );
+
+		if ( '' !== $token ) {
+			$tokens[] = $token;
+		}
+	}
+
+	return $tokens;
+}
+
+/**
+ * Shortcode segment of an Instagram permalink (p/reel/tv).
+ *
+ * @param string $permalink Post permalink.
+ * @return string
+ */
+function fluidampr_instagram_permalink_code( $permalink ) {
+	if ( preg_match( '#/(?:p|reel|reels|tv)/([A-Za-z0-9_-]+)#', (string) $permalink, $m ) ) {
+		return $m[1];
+	}
+
+	return '';
+}
+
+/**
+ * Drop hidden posts. Runs at read time so the cache stays untouched and
+ * edits in Customizer apply immediately.
+ *
+ * @param array<int, array<string, string>> $items Cached items.
+ * @return array<int, array<string, string>>
+ */
+function fluidampr_instagram_filter_hidden( $items ) {
+	$tokens = fluidampr_instagram_hidden_tokens();
+
+	if ( ! $tokens || ! is_array( $items ) ) {
+		return is_array( $items ) ? $items : array();
+	}
+
+	$visible = array();
+
+	foreach ( $items as $item ) {
+		$id   = isset( $item['id'] ) ? (string) $item['id'] : '';
+		$code = fluidampr_instagram_permalink_code( isset( $item['permalink'] ) ? $item['permalink'] : '' );
+
+		if ( ( '' !== $id && in_array( $id, $tokens, true ) ) || ( '' !== $code && in_array( $code, $tokens, true ) ) ) {
+			continue;
+		}
+
+		$visible[] = $item;
+	}
+
+	return $visible;
+}
+
+/**
  * Latest feed items, cached. Falls back to curated tiles.
  *
  * @param int $count Number of tiles.
@@ -345,10 +459,10 @@ function fluidampr_instagram_get_items( $count = 3 ) {
 		is_array( $cache )
 		&& ! empty( $cache['items'] )
 		&& is_array( $cache['items'] )
-		&& count( $cache['items'] ) >= $count
 		&& ( $cache['source'] ?? '' ) === 'api'
 	) {
-		return array_slice( $cache['items'], 0, $count );
+		// Filter the whole cached set (up to 21) so hidden posts are replaced by the next visible ones.
+		return array_slice( fluidampr_instagram_filter_hidden( $cache['items'] ), 0, $count );
 	}
 
 	$fetched = fluidampr_instagram_fetch_items( fluidampr_instagram_cache_size() );
@@ -365,7 +479,7 @@ function fluidampr_instagram_get_items( $count = 3 ) {
 		);
 		fluidampr_instagram_maybe_refresh_token();
 
-		return array_slice( $fetched, 0, $count );
+		return array_slice( fluidampr_instagram_filter_hidden( $fetched ), 0, $count );
 	}
 
 	$fallback = fluidampr_instagram_fallback_items();
@@ -392,6 +506,7 @@ function fluidampr_instagram_get_items( $count = 3 ) {
 function fluidampr_instagram_clear_cache() {
 	delete_transient( 'fluidampr_ig_feed_v1' );
 	delete_transient( 'fluidampr_ig_feed_v2' );
+	delete_transient( 'fluidampr_ig_feed_v3' );
 	delete_transient( fluidampr_instagram_transient_key() );
 }
 add_action( 'customize_save_after', 'fluidampr_instagram_clear_cache' );

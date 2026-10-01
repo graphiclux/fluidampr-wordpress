@@ -62,6 +62,7 @@ function fluidampr_default_options() {
 		'catalog_page'     => '/products/',
 		'newsletter_note'           => __( 'Get the latest updates on new equipment arrivals and market insights delivered to you.', 'fluidampr' ),
 		'instagram_access_token'    => '',
+		'instagram_hidden_posts'    => '',
 		'instagram_feed_shortcode'  => '',
 	);
 }
