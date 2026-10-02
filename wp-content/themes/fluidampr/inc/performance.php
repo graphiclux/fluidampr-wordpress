@@ -57,7 +57,7 @@ function fluidampr_dequeue_unused_assets() {
 add_action( 'wp_enqueue_scripts', 'fluidampr_dequeue_unused_assets', 100 );
 
 /**
- * Do not load Enfold Google Fonts; the child theme self-hosts Plus Jakarta Sans.
+ * Do not load Enfold Google Fonts; the child theme self-hosts Titillium, Inter, and DM Sans.
  *
  * @param bool $enabled Whether Enfold should print Google Fonts.
  * @return bool
